@@ -63,22 +63,24 @@ export const Consultation = () => {
             {/* Main Video Stream Simulator */}
             <div
               style={{
-                height: 380,
+                minHeight: 260,
+                height: 'clamp(260px, 42vw, 380px)',
                 position: 'relative',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+                padding: 16,
               }}
             >
               {!isVideoOff ? (
                 <div style={{ textAlign: 'center', color: '#fff' }}>
                   <Avatar
-                    size={90}
+                    size={80}
                     src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&auto=format&fit=crop&q=80"
                     style={{ border: '3px solid #0d9488', marginBottom: 12 }}
                   />
-                  <Title level={4} style={{ color: '#fff', margin: 0 }}>
+                  <Title level={4} style={{ color: '#fff', margin: 0, fontSize: 'clamp(16px, 3.5vw, 20px)' }}>
                     Alex Morgan (Patient)
                   </Title>
                   <Tag color="cyan" style={{ marginTop: 6 }}>
@@ -87,7 +89,7 @@ export const Consultation = () => {
                 </div>
               ) : (
                 <div style={{ textAlign: 'center', color: '#94a3b8' }}>
-                  <VideoCameraOutlined style={{ fontSize: 48, marginBottom: 8 }} />
+                  <VideoCameraOutlined style={{ fontSize: 44, marginBottom: 8 }} />
                   <div>Video is currently muted</div>
                 </div>
               )}
@@ -96,12 +98,12 @@ export const Consultation = () => {
               <div
                 style={{
                   position: 'absolute',
-                  bottom: 20,
-                  right: 20,
-                  width: 130,
-                  height: 90,
+                  bottom: 14,
+                  right: 14,
+                  width: 'clamp(90px, 20vw, 130px)',
+                  height: 'clamp(65px, 14vw, 90px)',
                   background: '#334155',
-                  borderRadius: 12,
+                  borderRadius: 10,
                   border: '2px solid rgba(255,255,255,0.2)',
                   display: 'flex',
                   alignItems: 'center',
@@ -111,20 +113,21 @@ export const Consultation = () => {
                   boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
                 }}
               >
-                <Avatar size={36} src={user?.avatar} />
-                <span style={{ fontSize: 10, marginTop: 4 }}>Dr. Sarah (You)</span>
+                <Avatar size={30} src={user?.avatar} />
+                <span style={{ fontSize: 9, marginTop: 2 }}>Dr. Sarah (You)</span>
               </div>
             </div>
 
             {/* Video Call Controls Bar */}
             <div
               style={{
-                padding: '16px 24px',
+                padding: '14px 16px',
                 background: '#1e293b',
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                gap: 16,
+                gap: 12,
+                flexWrap: 'wrap',
               }}
             >
               <Button
@@ -158,7 +161,7 @@ export const Consultation = () => {
                 shape="round"
                 icon={<PhoneOutlined rotate={225} />}
                 onClick={() => message.warning('Consultation ended. Record saved.')}
-                style={{ padding: '0 24px' }}
+                style={{ padding: '0 20px' }}
               >
                 End Consultation
               </Button>
@@ -175,8 +178,8 @@ export const Consultation = () => {
             }
             style={{ marginTop: 20, borderRadius: 16, border: '1px solid #e2e8f0' }}
           >
-            <Row gutter={16}>
-              <Col span={6}>
+            <Row gutter={[12, 12]}>
+              <Col xs={12} sm={6}>
                 <div style={{ textAlign: 'center', padding: 10, background: '#f0fdfa', borderRadius: 10 }}>
                   <Text type="secondary" style={{ fontSize: 12 }}>Blood Pressure</Text>
                   <Title level={4} style={{ margin: '4px 0 0', color: '#0d9488' }}>
@@ -185,7 +188,7 @@ export const Consultation = () => {
                   <Text style={{ fontSize: 10, color: '#64748b' }}>mmHg</Text>
                 </div>
               </Col>
-              <Col span={6}>
+              <Col xs={12} sm={6}>
                 <div style={{ textAlign: 'center', padding: 10, background: '#fef2f2', borderRadius: 10 }}>
                   <Text type="secondary" style={{ fontSize: 12 }}>Heart Rate</Text>
                   <Title level={4} style={{ margin: '4px 0 0', color: '#ef4444' }}>
@@ -194,7 +197,7 @@ export const Consultation = () => {
                   <Text style={{ fontSize: 10, color: '#64748b' }}>bpm</Text>
                 </div>
               </Col>
-              <Col span={6}>
+              <Col xs={12} sm={6}>
                 <div style={{ textAlign: 'center', padding: 10, background: '#f0f9ff', borderRadius: 10 }}>
                   <Text type="secondary" style={{ fontSize: 12 }}>Blood Oxygen</Text>
                   <Title level={4} style={{ margin: '4px 0 0', color: '#0284c7' }}>
@@ -203,7 +206,7 @@ export const Consultation = () => {
                   <Text style={{ fontSize: 10, color: '#64748b' }}>SpO2</Text>
                 </div>
               </Col>
-              <Col span={6}>
+              <Col xs={12} sm={6}>
                 <div style={{ textAlign: 'center', padding: 10, background: '#fefce8', borderRadius: 10 }}>
                   <Text type="secondary" style={{ fontSize: 12 }}>Blood Glucose</Text>
                   <Title level={4} style={{ margin: '4px 0 0', color: '#ca8a04' }}>

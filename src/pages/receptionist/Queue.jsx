@@ -63,27 +63,27 @@ export const Queue = () => {
           marginBottom: 24,
           boxShadow: '0 10px 25px rgba(13, 148, 136, 0.25)',
         }}
-        styles={{ body: { padding: 32 } }}
+        styles={{ body: { padding: 'clamp(16px, 3.5vw, 32px)' } }}
       >
-        <Row align="middle" justify="space-between">
+        <Row align="middle" justify="space-between" gutter={[16, 16]}>
           <Col xs={24} md={14}>
-            <Text style={{ color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, fontSize: 13 }}>
+            <Text style={{ color: 'rgba(255,255,255,0.85)', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, fontSize: 12 }}>
               🔊 NOW CALLING / ACTIVE CONSULTATION
             </Text>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 20, marginTop: 8 }}>
-              <Title level={1} style={{ color: '#ffffff', margin: 0, fontSize: 56, fontWeight: 800 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginTop: 8, flexWrap: 'wrap' }}>
+              <Title level={1} style={{ color: '#ffffff', margin: 0, fontSize: 'clamp(32px, 7vw, 56px)', fontWeight: 800, lineHeight: 1.1 }}>
                 Token {currentCalling}
               </Title>
-              <Tag color="cyan" style={{ fontSize: 16, padding: '6px 14px', borderRadius: 8 }}>
+              <Tag color="cyan" style={{ fontSize: 14, padding: '4px 10px', borderRadius: 8 }}>
                 Room 104 • Dr. Sarah Connor
               </Tag>
             </div>
-            <Paragraph style={{ color: 'rgba(255,255,255,0.9)', margin: '8px 0 0', fontSize: 15 }}>
+            <Paragraph style={{ color: 'rgba(255,255,255,0.95)', margin: '8px 0 0', fontSize: 14 }}>
               Patient: <strong>Alex Morgan</strong> (Cardiovascular Care)
             </Paragraph>
           </Col>
 
-          <Col xs={24} md={10} style={{ textAlign: 'right' }}>
+          <Col xs={24} md={10} style={{ textAlign: 'left' }}>
             <Button
               size="large"
               icon={<ForwardOutlined />}

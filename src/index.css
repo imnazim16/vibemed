@@ -10,7 +10,7 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-* {
+*, *::before, *::after {
   box-sizing: border-box;
 }
 
@@ -21,6 +21,7 @@ body {
   min-height: 100vh;
   background-color: #f8fafc;
   color: #0f172a;
+  overflow-x: hidden;
 }
 
 #root {
@@ -30,4 +31,216 @@ body {
   padding: 0;
   display: flex;
   flex-direction: column;
+}
+
+/* =========================================================
+   RESPONSIVE APP LAYOUT & NAVIGATION
+   ========================================================= */
+
+.vibemed-layout-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f8fafc;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+.vibemed-layout-body {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  max-width: 100vw;
+  position: relative;
+}
+
+/* Desktop Fixed Sidebar */
+.vibemed-desktop-sidebar {
+  width: 240px;
+  min-width: 240px;
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  min-height: calc(100vh - 64px);
+  padding-top: 12px;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+}
+
+/* Main Content Area */
+.vibemed-main-content {
+  flex: 1;
+  width: calc(100% - 240px);
+  max-width: calc(100% - 240px);
+  padding: 24px 32px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* Responsive Top Header */
+.vibemed-header {
+  height: 64px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 99;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  width: 100%;
+}
+
+.vibemed-brand-logo-box {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #0d9488 0%, #0284c7 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 19px;
+  box-shadow: 0 4px 10px rgba(13, 148, 136, 0.3);
+  flex-shrink: 0;
+}
+
+.vibemed-header-brand-title {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #0f766e 0%, #0369a1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.vibemed-brand-sub-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  margin-left: 8px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.vibemed-mobile-menu-btn {
+  display: none;
+}
+
+.vibemed-header-user-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.vibemed-header-role-tag {
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 11px;
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+
+.vibemed-switch-role-btn {
+  border-radius: 6px;
+  border-color: #cbd5e1;
+  color: #475569;
+  font-size: 12px;
+}
+
+/* =========================================================
+   BREAKPOINTS: TABLET & MOBILE (< 992px)
+   ========================================================= */
+@media (max-width: 991px) {
+  .vibemed-desktop-sidebar {
+    display: none !important;
+  }
+
+  .vibemed-mobile-menu-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    width: 36px;
+    height: 36px;
+  }
+
+  .vibemed-main-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 20px 16px !important;
+  }
+
+  .vibemed-header {
+    padding: 0 16px;
+  }
+}
+
+/* =========================================================
+   BREAKPOINTS: MOBILE SMALL (< 640px)
+   ========================================================= */
+@media (max-width: 640px) {
+  .vibemed-main-content {
+    padding: 14px 10px !important;
+  }
+
+  .vibemed-header {
+    padding: 0 10px;
+  }
+
+  .vibemed-header-brand-title {
+    font-size: 17px;
+  }
+
+  .vibemed-brand-sub-badge {
+    display: none;
+  }
+
+  .vibemed-header-user-text {
+    display: none;
+  }
+
+  .vibemed-header-role-tag {
+    font-size: 10px;
+    padding: 1px 6px;
+  }
+
+  .vibemed-switch-role-btn .vibemed-btn-label {
+    display: none;
+  }
+
+  /* Ant Design Card padding optimization for small screens */
+  .ant-card .ant-card-head {
+    padding: 0 14px !important;
+    min-height: 46px !important;
+    font-size: 14px !important;
+  }
+
+  .ant-card .ant-card-body {
+    padding: 14px !important;
+  }
+
+  /* Modal responsiveness */
+  .ant-modal {
+    max-width: calc(100vw - 20px) !important;
+    margin: 10px auto !important;
+  }
+}
+
+/* Custom Table Scrollbar for touch & mobile */
+.ant-table-wrapper {
+  max-width: 100%;
+}
+
+.ant-table-content::-webkit-scrollbar {
+  height: 6px;
+}
+
+.ant-table-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
 }

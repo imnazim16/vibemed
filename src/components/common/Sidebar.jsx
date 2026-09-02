@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu } from 'antd';
+import { Menu, Drawer } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   DashboardOutlined,
@@ -14,7 +14,7 @@ import {
 } from '@ant-design/icons';
 import { useAuth } from '../../hooks/useAuth';
 
-export const Sidebar = () => {
+export const Sidebar = ({ mobileOpen, onClose }) => {
   const { role } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -117,26 +117,68 @@ export const Sidebar = () => {
     }
   };
 
-  return (
-    <aside
+  const handleMenuClick = ({ key }) => {
+    navigate(key);
+    if (onClose) {
+      onClose();
+    }
+  };
+
+  const menuContent = (
+    <Menu
+      mode="inline"
+      selectedKeys={[location.pathname]}
+      onClick={handleMenuClick}
+      items={getMenuItems()}
       style={{
-        width: 240,
-        background: '#ffffff',
-        borderRight: '1px solid #e2e8f0',
-        minHeight: 'calc(100vh - 64px)',
-        paddingTop: 12,
+        borderRight: 'none',
+        fontWeight: 500,
+        fontSize: 14,
       }}
-    >
-      <Menu
-        mode="inline"
-        selectedKeys={[location.pathname]}
-        onClick={({ key }) => navigate(key)}
-        items={getMenuItems()}
-        style={{
-          borderRight: 'none',
-          fontWeight: 500,
-        }}
-      />
-    </aside>
+    />
+  );
+
+  return (
+    <>
+      {/* Desktop Persistent Sidebar */}
+      <aside className="vibemed-desktop-sidebar">
+        {menuContent}
+      </aside>
+
+      {/* Mobile / Tablet Drawer */}
+      <Drawer
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div
+              style={{
+                width: 32,
+                height: 32,
+                background: 'linear-gradient(135deg, #0d9488 0%, #0284c7 100%)',
+                borderRadius: 8,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff',
+                fontSize: 16,
+              }}
+            >
+              <MedicineBoxOutlined />
+            </div>
+            <span style={{ fontWeight: 800, color: '#0f766e', fontSize: 18 }}>
+              VibeMed
+            </span>
+          </div>
+        }
+        placement="left"
+        onClose={onClose}
+        open={mobileOpen}
+        styles={{ body: { padding: '12px 0' } }}
+        width={260}
+      >
+        {menuContent}
+      </Drawer>
+    </>
   );
 };
+
+export default Sidebar;

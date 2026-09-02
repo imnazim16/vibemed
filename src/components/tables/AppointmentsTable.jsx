@@ -176,6 +176,7 @@ export const AppointmentsTable = ({
       rowKey="id"
       loading={loading}
       pagination={{ pageSize: 6 }}
+      scroll={{ x: 750 }}
       style={{ borderRadius: 12 }}
     />
   );

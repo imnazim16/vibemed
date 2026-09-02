@@ -90,6 +90,7 @@
   color: #ffffff;
   font-size: 26px;
   box-shadow: 0 10px 20px -5px rgba(13, 148, 136, 0.4);
+  flex-shrink: 0;
 }
 
 .vibemed-brand-name {
@@ -180,6 +181,7 @@
   box-shadow: 0 20px 50px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(226, 232, 240, 0.8);
   position: relative;
   text-align: left;
+  width: 100%;
 }
 
 .vibemed-auth-header {
@@ -289,23 +291,57 @@
 /* Responsive adjustments */
 @media (max-width: 960px) {
   .vibemed-auth-wrapper {
-    grid-template-columns: 1fr;
-    gap: 32px;
+    grid-template-columns: 1fr !important;
+    gap: 28px;
     padding: 24px 16px;
   }
 
   .vibemed-hero-side {
     text-align: center;
     align-items: center;
-    padding: 8px;
+    padding: 0;
+    gap: 16px;
   }
 
   .vibemed-features-list {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
     width: 100%;
   }
 
   .vibemed-hero-heading {
-    font-size: 28px;
+    font-size: 26px;
+  }
+
+  .vibemed-auth-card {
+    padding: 24px 20px;
+    border-radius: 18px;
+  }
+}
+
+@media (max-width: 580px) {
+  .vibemed-features-list {
+    grid-template-columns: 1fr;
+  }
+
+  .vibemed-hero-side {
+    display: none; /* Hide heavy hero on small phones for rapid login flow */
+  }
+
+  .vibemed-auth-wrapper {
+    padding: 16px 12px;
+  }
+
+  .vibemed-auth-card {
+    padding: 20px 14px;
+    border-radius: 16px;
+  }
+
+  .vibemed-auth-title {
+    font-size: 20px;
+  }
+
+  .vibemed-demo-chip {
+    padding: 4px 8px;
+    font-size: 11px;
   }
 }

@@ -116,6 +116,7 @@ export const PatientsTable = ({ patients, loading, onViewDetails, onBookAppointm
       rowKey="id"
       loading={loading}
       pagination={{ pageSize: 6 }}
+      scroll={{ x: 800 }}
       style={{ borderRadius: 12 }}
     />
   );

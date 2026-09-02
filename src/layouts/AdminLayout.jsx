@@ -1,15 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Header } from '../components/common/Header';
 import { Sidebar } from '../components/common/Sidebar';
 
 export const AdminLayout = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f8fafc' }}>
-      <Header />
-      <div style={{ display: 'flex', flex: 1 }}>
-        <Sidebar />
-        <main style={{ flex: 1, padding: '24px 32px', maxWidth: 'calc(100vw - 240px)', overflowX: 'auto' }}>
+    <div className="vibemed-layout-container">
+      <Header onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)} />
+      <div className="vibemed-layout-body">
+        <Sidebar
+          mobileOpen={mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
+        />
+        <main className="vibemed-main-content">
           <Outlet />
         </main>
       </div>
