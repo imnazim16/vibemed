@@ -1,10 +1,10 @@
 import React from 'react';
-import { Modal, Avatar, Typography, Tag, Rate, Space, Divider, Descriptions, Button } from 'antd';
-import { MedicineBoxOutlined, PhoneOutlined, MailOutlined, CalendarOutlined } from '@ant-design/icons';
+import { Modal, Avatar, Typography, Tag, Rate, Space, Divider, Descriptions, Button, Popconfirm } from 'antd';
+import { MedicineBoxOutlined, CalendarOutlined, DeleteOutlined } from '@ant-design/icons';
 
 const { Title, Text, Paragraph } = Typography;
 
-export const DoctorDetailsModal = ({ open, onCancel, doctor, onBook }) => {
+export const DoctorDetailsModal = ({ open, onCancel, doctor, onBook, onDelete }) => {
   if (!doctor) return null;
 
   return (
@@ -12,23 +12,43 @@ export const DoctorDetailsModal = ({ open, onCancel, doctor, onBook }) => {
       open={open}
       onCancel={onCancel}
       footer={[
+        onDelete && (
+          <Popconfirm
+            key="delete"
+            title="Delete Doctor Profile"
+            description={`Are you sure you want to delete ${doctor.name}? This cannot be undone.`}
+            onConfirm={() => {
+              onCancel();
+              onDelete(doctor);
+            }}
+            okText="Yes, Delete"
+            cancelText="Cancel"
+            okButtonProps={{ danger: true }}
+          >
+            <Button danger icon={<DeleteOutlined />} style={{ float: 'left' }}>
+              Delete Doctor
+            </Button>
+          </Popconfirm>
+        ),
         <Button key="close" onClick={onCancel}>
           Close
         </Button>,
-        <Button
-          key="book"
-          type="primary"
-          icon={<CalendarOutlined />}
-          style={{ backgroundColor: '#0d9488', borderColor: '#0d9488' }}
-          onClick={() => {
-            onCancel();
-            if (onBook) onBook(doctor);
-          }}
-        >
-          Book Consultation (${doctor.fee})
-        </Button>,
-      ]}
-      width={600}
+        onBook && (
+          <Button
+            key="book"
+            type="primary"
+            icon={<CalendarOutlined />}
+            style={{ backgroundColor: '#0d9488', borderColor: '#0d9488' }}
+            onClick={() => {
+              onCancel();
+              onBook(doctor);
+            }}
+          >
+            Book Consultation (${doctor.fee})
+          </Button>
+        ),
+      ].filter(Boolean)}
+      width={620}
     >
       <div style={{ textAlign: 'center', paddingTop: 16 }}>
         <Avatar
@@ -61,14 +81,18 @@ export const DoctorDetailsModal = ({ open, onCancel, doctor, onBook }) => {
         <Descriptions.Item label="Consultation Fee">
           <strong style={{ color: '#0d9488', fontSize: 15 }}>${doctor.fee} / visit</strong>
         </Descriptions.Item>
-        <Descriptions.Item label="Available Days">
-          <Space size={4}>
+        <Descriptions.Item label="Available Schedule (Days)">
+          <Space size={4} wrap>
             {doctor.availability?.map((day) => (
               <Tag key={day} color="cyan">{day}</Tag>
             ))}
           </Space>
         </Descriptions.Item>
+        <Descriptions.Item label="Contact Email">{doctor.email}</Descriptions.Item>
+        <Descriptions.Item label="Contact Phone">{doctor.phone}</Descriptions.Item>
       </Descriptions>
     </Modal>
   );
 };
+
+export default DoctorDetailsModal;
