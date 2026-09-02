@@ -114,9 +114,6 @@ export const Header = ({ onToggleMobileMenu }) => {
           <span className="vibemed-header-brand-title">
             VibeMed
           </span>
-          <span className="vibemed-brand-sub-badge">
-            OS
-          </span>
         </div>
       </div>
 
