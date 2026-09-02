@@ -1,0 +1,311 @@
+.vibemed-auth-container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 50%, #f8fafc 100%);
+  position: relative;
+  overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+/* Background Ambient Orbs */
+.vibemed-auth-container::before {
+  content: '';
+  position: absolute;
+  top: -120px;
+  right: -100px;
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(13, 148, 136, 0.18) 0%, rgba(13, 148, 136, 0) 70%);
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.vibemed-auth-container::after {
+  content: '';
+  position: absolute;
+  bottom: -150px;
+  left: -100px;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, rgba(14, 165, 233, 0) 70%);
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.vibemed-auth-wrapper {
+  width: 100%;
+  max-width: 1200px;
+  margin: auto;
+  padding: 40px 24px;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 48px;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* Left Brand Hero Section */
+.vibemed-hero-side {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  text-align: left;
+}
+
+.vibemed-brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(13, 148, 136, 0.12);
+  border: 1px solid rgba(13, 148, 136, 0.25);
+  padding: 6px 14px;
+  border-radius: 9999px;
+  width: fit-content;
+  color: #0f766e;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.vibemed-logo-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.vibemed-logo-icon {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #0d9488 0%, #0284c7 100%);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 26px;
+  box-shadow: 0 10px 20px -5px rgba(13, 148, 136, 0.4);
+}
+
+.vibemed-brand-name {
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #0f766e 0%, #0369a1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.vibemed-hero-heading {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.8px;
+}
+
+.vibemed-hero-heading span {
+  color: #0d9488;
+}
+
+.vibemed-hero-desc {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #475569;
+  margin: 0;
+}
+
+/* Feature Cards Grid */
+.vibemed-features-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.vibemed-feature-item {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 4px 15px -2px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.vibemed-feature-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -4px rgba(13, 148, 136, 0.15);
+}
+
+.vibemed-feature-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #f0fdfa;
+  color: #0d9488;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.vibemed-feature-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.vibemed-feature-subtitle {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+/* Right Auth Card Section */
+.vibemed-auth-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 36px 32px;
+  box-shadow: 0 20px 50px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(226, 232, 240, 0.8);
+  position: relative;
+  text-align: left;
+}
+
+.vibemed-auth-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.vibemed-auth-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.vibemed-auth-subtitle {
+  font-size: 14px;
+  color: #64748b;
+}
+
+/* Demo Quick Fill Badges */
+.vibemed-demo-section {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+}
+
+.vibemed-demo-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.vibemed-demo-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.vibemed-demo-chip {
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #334155;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vibemed-demo-chip:hover {
+  background: #f0fdfa;
+  color: #0d9488;
+  border-color: #0d9488;
+}
+
+.vibemed-demo-chip.active {
+  background: #0d9488;
+  color: #ffffff;
+  border-color: #0d9488;
+}
+
+/* Submit Button Gradient */
+.vibemed-submit-btn {
+  height: 44px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0d9488 0%, #0284c7 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.3) !important;
+  transition: all 0.2s ease !important;
+}
+
+.vibemed-submit-btn:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(13, 148, 136, 0.4) !important;
+}
+
+.vibemed-auth-footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.vibemed-auth-footer a {
+  color: #0d9488;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.vibemed-auth-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 960px) {
+  .vibemed-auth-wrapper {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 24px 16px;
+  }
+
+  .vibemed-hero-side {
+    text-align: center;
+    align-items: center;
+    padding: 8px;
+  }
+
+  .vibemed-features-list {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .vibemed-hero-heading {
+    font-size: 28px;
+  }
+}
