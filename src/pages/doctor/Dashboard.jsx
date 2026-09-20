@@ -106,16 +106,16 @@ export const DoctorDashboard = () => {
             <div
               style={{
                 background: 'linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%)',
-                padding: 24,
+                padding: 'clamp(16px, 3.5vw, 24px)',
                 borderRadius: 12,
                 border: '1px solid rgba(13, 148, 136, 0.2)',
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
                 <Space size="middle">
-                  <Avatar size={54} icon={<UserOutlined />} style={{ backgroundColor: '#0d9488' }} />
+                  <Avatar size={52} icon={<UserOutlined />} style={{ backgroundColor: '#0d9488' }} />
                   <div>
-                    <Title level={4} style={{ margin: 0 }}>
+                    <Title level={4} style={{ margin: 0, fontSize: 'clamp(15px, 3vw, 18px)' }}>
                       Alex Morgan (32 yrs • Male)
                     </Title>
                     <Text type="secondary">Token: <strong>A-12</strong> • Blood: <strong>O+</strong></Text>
@@ -133,7 +133,7 @@ export const DoctorDashboard = () => {
                 </div>
               </div>
 
-              <div style={{ marginTop: 16, display: 'flex', gap: 12 }}>
+              <div style={{ marginTop: 16, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <Button
                   type="primary"
                   icon={<VideoCameraOutlined />}

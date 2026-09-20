@@ -61,8 +61,8 @@ export const AppointmentForm = ({ onSuccess, initialValues, patientName, patient
         ...initialValues,
       }}
     >
-      <Row gutter={16}>
-        <Col span={12}>
+      <Row gutter={[16, 0]}>
+        <Col xs={24} sm={12}>
           <Form.Item
             name="patientName"
             label="Patient Name"
@@ -72,7 +72,7 @@ export const AppointmentForm = ({ onSuccess, initialValues, patientName, patient
           </Form.Item>
         </Col>
 
-        <Col span={12}>
+        <Col xs={24} sm={12}>
           <Form.Item
             name="patientPhone"
             label="Phone Number"
@@ -97,8 +97,8 @@ export const AppointmentForm = ({ onSuccess, initialValues, patientName, patient
         </Select>
       </Form.Item>
 
-      <Row gutter={16}>
-        <Col span={12}>
+      <Row gutter={[16, 0]}>
+        <Col xs={24} sm={12}>
           <Form.Item
             name="date"
             label="Appointment Date"
@@ -108,7 +108,7 @@ export const AppointmentForm = ({ onSuccess, initialValues, patientName, patient
           </Form.Item>
         </Col>
 
-        <Col span={12}>
+        <Col xs={24} sm={12}>
           <Form.Item
             name="time"
             label="Preferred Time Slot"
@@ -119,17 +119,17 @@ export const AppointmentForm = ({ onSuccess, initialValues, patientName, patient
         </Col>
       </Row>
 
-      <Row gutter={16}>
-        <Col span={12}>
+      <Row gutter={[16, 0]}>
+        <Col xs={24} sm={12}>
           <Form.Item name="type" label="Consultation Mode">
-            <Radio.Group buttonStyle="solid">
+            <Radio.Group buttonStyle="solid" style={{ width: '100%' }}>
               <Radio.Button value="Video Consultation">Virtual (Video)</Radio.Button>
               <Radio.Button value="In-Clinic Checkup">In-Person Clinic</Radio.Button>
             </Radio.Group>
           </Form.Item>
         </Col>
 
-        <Col span={12}>
+        <Col xs={24} sm={12}>
           <Form.Item name="priority" label="Urgency Priority">
             <Radio.Group>
               <Radio value="Normal">Normal</Radio>

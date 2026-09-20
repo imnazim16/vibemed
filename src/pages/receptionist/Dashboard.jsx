@@ -148,6 +148,7 @@ export const ReceptionistDashboard = () => {
           columns={queueColumns}
           rowKey="id"
           pagination={{ pageSize: 5 }}
+          scroll={{ x: 650 }}
         />
       </Card>
 

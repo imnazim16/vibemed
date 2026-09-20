@@ -37,7 +37,12 @@ export const MedicalHistory = () => {
 
       {/* Patient Profile Card */}
       <Card style={{ marginBottom: 20, borderRadius: 16, border: '1px solid #e2e8f0' }}>
-        <Descriptions title="Personal Health Profile" bordered size="small">
+        <Descriptions
+          title="Personal Health Profile"
+          bordered
+          size="small"
+          column={{ xxl: 3, xl: 3, lg: 3, md: 2, sm: 2, xs: 1 }}
+        >
           <Descriptions.Item label="Full Name">{patient?.name}</Descriptions.Item>
           <Descriptions.Item label="Age / Gender">{patient?.age} yrs • {patient?.gender}</Descriptions.Item>
           <Descriptions.Item label="Blood Type">
@@ -137,8 +142,8 @@ export const MedicalHistory = () => {
                 </span>
               ),
               children: (
-                <Row gutter={[16, 16]} style={{ paddingTop: 8 }}>
-                  <Col span={8}>
+                <Row gutter={[12, 12]} style={{ paddingTop: 8 }}>
+                  <Col xs={24} sm={8}>
                     <Card size="small" style={{ background: '#f0fdfa', borderRadius: 10 }}>
                       <Text type="secondary">Blood Pressure</Text>
                       <Title level={4} style={{ margin: '4px 0 0', color: '#0d9488' }}>
@@ -146,7 +151,7 @@ export const MedicalHistory = () => {
                       </Title>
                     </Card>
                   </Col>
-                  <Col span={8}>
+                  <Col xs={24} sm={8}>
                     <Card size="small" style={{ background: '#fef2f2', borderRadius: 10 }}>
                       <Text type="secondary">Heart Rate</Text>
                       <Title level={4} style={{ margin: '4px 0 0', color: '#ef4444' }}>
@@ -154,7 +159,7 @@ export const MedicalHistory = () => {
                       </Title>
                     </Card>
                   </Col>
-                  <Col span={8}>
+                  <Col xs={24} sm={8}>
                     <Card size="small" style={{ background: '#f0f9ff', borderRadius: 10 }}>
                       <Text type="secondary">Blood Glucose</Text>
                       <Title level={4} style={{ margin: '4px 0 0', color: '#0284c7' }}>

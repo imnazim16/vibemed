@@ -111,17 +111,35 @@ export const FindDoctor = () => {
                 </div>
               </div>
 
-              <div style={{ marginTop: 14, fontSize: 13, color: '#64748b' }}>
+              <div style={{ marginTop: 14, fontSize: 13, color: '#64748b', display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <div>🎓 {doc.education}</div>
                 <div>💼 {doc.experience} Experience</div>
-                <div style={{ marginTop: 6, fontWeight: 700, color: '#0d9488', fontSize: 15 }}>
+                <div style={{ fontWeight: 700, color: '#0d9488', fontSize: 15 }}>
                   ${doc.fee} <span style={{ fontSize: 12, fontWeight: 400, color: '#64748b' }}>/ consultation</span>
                 </div>
+                <div style={{ marginTop: 2, fontSize: 12 }}>
+                  <span style={{ fontWeight: 600, color: '#334155' }}>Days: </span>
+                  <Space size={2} wrap>
+                    {doc.availability?.map((d) => (
+                      <Tag key={d} color="cyan" style={{ fontSize: 10, marginInlineEnd: 2, padding: '0 4px' }}>{d}</Tag>
+                    ))}
+                  </Space>
+                </div>
+                {(doc.timeSlots || []).length > 0 && (
+                  <div style={{ fontSize: 12 }}>
+                    <span style={{ fontWeight: 600, color: '#334155' }}>Slots: </span>
+                    <Space size={2} wrap>
+                      {(doc.timeSlots || []).slice(0, 2).map((s) => (
+                        <Tag key={s} color="blue" style={{ fontSize: 10, marginInlineEnd: 2, padding: '0 4px' }}>{s}</Tag>
+                      ))}
+                    </Space>
+                  </div>
+                )}
               </div>
 
-              <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
+              <div style={{ marginTop: 16, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <Button
-                  style={{ flex: 1 }}
+                  style={{ flex: 1, minWidth: 80 }}
                   onClick={() => setSelectedDoctorForDetails(doc)}
                 >
                   Profile
@@ -129,7 +147,7 @@ export const FindDoctor = () => {
                 <Button
                   type="primary"
                   icon={<CalendarOutlined />}
-                  style={{ flex: 1.2, backgroundColor: '#0d9488', borderRadius: 8 }}
+                  style={{ flex: 1.2, minWidth: 110, backgroundColor: '#0d9488', borderRadius: 8 }}
                   onClick={() => setSelectedDoctorForBooking(doc)}
                 >
                   Book Visit

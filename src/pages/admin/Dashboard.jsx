@@ -154,6 +154,7 @@ export const AdminDashboard = () => {
               rowKey="id"
               loading={loading}
               pagination={false}
+              scroll={{ x: 650 }}
             />
           </Card>
         </Col>

@@ -34,8 +34,8 @@ export const PrescriptionForm = ({ patientId, doctorName, onSuccess }) => {
 
   return (
     <Form form={form} layout="vertical" onFinish={handleFinish}>
-      <Row gutter={16}>
-        <Col span={14}>
+      <Row gutter={[16, 0]}>
+        <Col xs={24} sm={14}>
           <Form.Item
             name="medicine"
             label="Medicine / Brand Name"
@@ -45,7 +45,7 @@ export const PrescriptionForm = ({ patientId, doctorName, onSuccess }) => {
           </Form.Item>
         </Col>
 
-        <Col span={10}>
+        <Col xs={24} sm={10}>
           <Form.Item
             name="dosage"
             label="Dosage Strength"
@@ -56,8 +56,8 @@ export const PrescriptionForm = ({ patientId, doctorName, onSuccess }) => {
         </Col>
       </Row>
 
-      <Row gutter={16}>
-        <Col span={12}>
+      <Row gutter={[16, 0]}>
+        <Col xs={24} sm={12}>
           <Form.Item
             name="frequency"
             label="Frequency"
@@ -73,7 +73,7 @@ export const PrescriptionForm = ({ patientId, doctorName, onSuccess }) => {
           </Form.Item>
         </Col>
 
-        <Col span={12}>
+        <Col xs={24} sm={12}>
           <Form.Item
             name="duration"
             label="Duration"

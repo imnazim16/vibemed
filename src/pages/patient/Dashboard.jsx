@@ -112,36 +112,36 @@ export const PatientDashboard = () => {
               <div
                 style={{
                   background: 'linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%)',
-                  padding: 24,
+                  padding: 'clamp(16px, 3.5vw, 24px)',
                   borderRadius: 12,
                   border: '1px solid rgba(13, 148, 136, 0.2)',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
                   <Space size="middle">
                     <Avatar
-                      size={54}
+                      size={52}
                       src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&auto=format&fit=crop&q=80"
                     />
                     <div>
-                      <Title level={4} style={{ margin: 0 }}>
+                      <Title level={4} style={{ margin: 0, fontSize: 'clamp(15px, 3vw, 18px)' }}>
                         {nextAppointment.doctorName}
                       </Title>
-                      <Tag color="geekblue">{nextAppointment.specialty}</Tag>
+                      <Tag color="geekblue" style={{ marginTop: 2 }}>{nextAppointment.specialty}</Tag>
                     </div>
                   </Space>
-                  <Tag color="green" style={{ fontSize: 13, padding: '4px 8px' }}>
+                  <Tag color="green" style={{ fontSize: 13, padding: '3px 8px' }}>
                     {nextAppointment.status}
                   </Tag>
                 </div>
 
-                <div style={{ marginTop: 16, display: 'flex', gap: 24, color: '#475569', fontSize: 13 }}>
+                <div style={{ marginTop: 14, display: 'flex', gap: 16, flexWrap: 'wrap', color: '#475569', fontSize: 13 }}>
                   <div>📅 <strong>Date:</strong> {nextAppointment.date}</div>
                   <div>⏰ <strong>Time:</strong> {nextAppointment.time}</div>
                   <div>🎟️ <strong>Token:</strong> {nextAppointment.tokenNumber}</div>
                 </div>
 
-                <div style={{ marginTop: 16, display: 'flex', gap: 12 }}>
+                <div style={{ marginTop: 16, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                   <Button
                     type="primary"
                     icon={<VideoCameraOutlined />}

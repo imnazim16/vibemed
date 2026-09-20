@@ -10,7 +10,8 @@ export const BookAppointmentModal = ({ open, onCancel, onSuccess, patient, docto
       onCancel={onCancel}
       footer={null}
       destroyOnClose
-      width={600}
+      width="100%"
+      style={{ maxWidth: 600 }}
     >
       <div style={{ paddingTop: 12 }}>
         <AppointmentForm

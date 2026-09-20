@@ -15,6 +15,7 @@ const INITIAL_DOCTORS = [
     department: 'Cardiovascular Care',
     education: 'Johns Hopkins School of Medicine',
     availability: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+    timeSlots: ['09:00 AM - 12:00 PM', '02:00 PM - 05:00 PM'],
     phone: '+1 (555) 234-5678',
     email: 'dr.sarah@vibemed.health',
     patientsCount: 420,
@@ -33,6 +34,7 @@ const INITIAL_DOCTORS = [
     department: 'Neurology Department',
     education: 'Harvard Medical School',
     availability: ['Mon', 'Wed', 'Fri'],
+    timeSlots: ['10:00 AM - 01:00 PM', '03:00 PM - 06:00 PM'],
     phone: '+1 (555) 345-6789',
     email: 'dr.wilson@vibemed.health',
     patientsCount: 310,
@@ -51,6 +53,7 @@ const INITIAL_DOCTORS = [
     department: 'Pediatrics Wing',
     education: 'Stanford University Medical Center',
     availability: ['Tue', 'Thu', 'Sat'],
+    timeSlots: ['09:00 AM - 01:00 PM', '04:00 PM - 07:00 PM'],
     phone: '+1 (555) 456-7890',
     email: 'dr.emily@vibemed.health',
     patientsCount: 560,
@@ -69,6 +72,7 @@ const INITIAL_DOCTORS = [
     department: 'Orthopedics Clinic',
     education: 'Columbia University Vagelos',
     availability: ['Mon', 'Tue', 'Thu', 'Fri'],
+    timeSlots: ['08:30 AM - 11:30 AM', '01:30 PM - 04:30 PM'],
     phone: '+1 (555) 567-8901',
     email: 'dr.marcus@vibemed.health',
     patientsCount: 280,
@@ -87,6 +91,7 @@ const INITIAL_DOCTORS = [
     department: 'Dermatology & Skin Care',
     education: 'UCLA David Geffen School',
     availability: ['Wed', 'Thu', 'Fri', 'Sat'],
+    timeSlots: ['11:00 AM - 02:00 PM', '05:00 PM - 08:00 PM'],
     phone: '+1 (555) 678-9012',
     email: 'dr.patel@vibemed.health',
     patientsCount: 490,
@@ -108,6 +113,17 @@ export const doctorService = {
     return ['All', 'Cardiology', 'Neurology', 'Pediatrics', 'Orthopedics', 'Dermatology', 'General Medicine'];
   },
 
+  getTimeSlots: () => {
+    return [
+      '08:00 AM - 11:00 AM (Early Morning)',
+      '09:00 AM - 12:00 PM (Morning Slot)',
+      '12:00 PM - 03:00 PM (Midday Slot)',
+      '02:00 PM - 05:00 PM (Afternoon Slot)',
+      '05:00 PM - 08:00 PM (Evening Slot)',
+      '07:00 PM - 10:00 PM (Night Triage)',
+    ];
+  },
+
   addDoctor: async (doctor) => {
     const newDoc = {
       ...doctor,
@@ -117,6 +133,9 @@ export const doctorService = {
       patientsCount: 0,
       avatar: doctor.avatar || 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&auto=format&fit=crop&q=80',
       status: 'Available',
+      timeSlots: doctor.timeSlots && doctor.timeSlots.length > 0
+        ? doctor.timeSlots
+        : ['09:00 AM - 12:00 PM', '02:00 PM - 05:00 PM'],
     };
     doctorsCache = [newDoc, ...doctorsCache];
     return newDoc;
@@ -132,3 +151,5 @@ export const doctorService = {
     return true;
   },
 };
+
+export default doctorService;

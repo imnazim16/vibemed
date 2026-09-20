@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, Avatar, Typography, Tag, Rate, Space, Divider, Descriptions, Button, Popconfirm } from 'antd';
-import { MedicineBoxOutlined, CalendarOutlined, DeleteOutlined } from '@ant-design/icons';
+import { MedicineBoxOutlined, CalendarOutlined, DeleteOutlined, ClockCircleOutlined } from '@ant-design/icons';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -11,6 +11,8 @@ export const DoctorDetailsModal = ({ open, onCancel, doctor, onBook, onDelete })
     <Modal
       open={open}
       onCancel={onCancel}
+      width="100%"
+      style={{ maxWidth: 620 }}
       footer={[
         onDelete && (
           <Popconfirm
@@ -48,7 +50,6 @@ export const DoctorDetailsModal = ({ open, onCancel, doctor, onBook, onDelete })
           </Button>
         ),
       ].filter(Boolean)}
-      width={620}
     >
       <div style={{ textAlign: 'center', paddingTop: 16 }}>
         <Avatar
@@ -85,6 +86,15 @@ export const DoctorDetailsModal = ({ open, onCancel, doctor, onBook, onDelete })
           <Space size={4} wrap>
             {doctor.availability?.map((day) => (
               <Tag key={day} color="cyan">{day}</Tag>
+            ))}
+          </Space>
+        </Descriptions.Item>
+        <Descriptions.Item label="Consultation Time Slots">
+          <Space size={4} wrap>
+            {(doctor.timeSlots || ['09:00 AM - 12:00 PM', '02:00 PM - 05:00 PM']).map((slot) => (
+              <Tag key={slot} color="blue" icon={<ClockCircleOutlined />}>
+                {slot}
+              </Tag>
             ))}
           </Space>
         </Descriptions.Item>

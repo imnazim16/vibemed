@@ -18,10 +18,11 @@ export const PatientDetailsModal = ({ open, onCancel, patient }) => {
       open={open}
       onCancel={onCancel}
       footer={null}
-      width={750}
+      width="100%"
+      style={{ maxWidth: 750 }}
     >
       <div style={{ padding: '8px 0' }}>
-        <Descriptions bordered size="small" column={{ xxl: 3, xl: 3, lg: 3, md: 3, sm: 2, xs: 1 }}>
+        <Descriptions bordered size="small" column={{ xxl: 3, xl: 3, lg: 3, md: 2, sm: 2, xs: 1 }}>
           <Descriptions.Item label="Patient ID">{patient.id}</Descriptions.Item>
           <Descriptions.Item label="Age / Gender">{patient.age} yrs • {patient.gender}</Descriptions.Item>
           <Descriptions.Item label="Blood Group">
@@ -44,7 +45,7 @@ export const PatientDetailsModal = ({ open, onCancel, patient }) => {
         </Divider>
 
         <Row gutter={[12, 12]}>
-          <Col span={8}>
+          <Col xs={24} sm={8}>
             <Card size="small" style={{ textAlign: 'center', background: '#f0fdfa' }}>
               <Text type="secondary" style={{ fontSize: 11 }}>Blood Pressure</Text>
               <Title level={4} style={{ margin: '4px 0 0', color: '#0d9488' }}>
@@ -52,7 +53,7 @@ export const PatientDetailsModal = ({ open, onCancel, patient }) => {
               </Title>
             </Card>
           </Col>
-          <Col span={8}>
+          <Col xs={24} sm={8}>
             <Card size="small" style={{ textAlign: 'center', background: '#fef2f2' }}>
               <Text type="secondary" style={{ fontSize: 11 }}>Heart Rate</Text>
               <Title level={4} style={{ margin: '4px 0 0', color: '#ef4444' }}>
@@ -60,7 +61,7 @@ export const PatientDetailsModal = ({ open, onCancel, patient }) => {
               </Title>
             </Card>
           </Col>
-          <Col span={8}>
+          <Col xs={24} sm={8}>
             <Card size="small" style={{ textAlign: 'center', background: '#f0f9ff' }}>
               <Text type="secondary" style={{ fontSize: 11 }}>Blood Oxygen (SpO2)</Text>
               <Title level={4} style={{ margin: '4px 0 0', color: '#0284c7' }}>

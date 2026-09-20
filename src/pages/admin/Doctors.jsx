@@ -27,6 +27,7 @@ import {
   StarFilled,
   DeleteOutlined,
   CalendarOutlined,
+  ClockCircleOutlined,
   EyeOutlined,
 } from '@ant-design/icons';
 import { PageHeader } from '../../components/common/PageHeader';
@@ -37,13 +38,22 @@ const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
 
 const WEEKDAYS = [
-  { label: 'Monday (Mon)', value: 'Mon' },
-  { label: 'Tuesday (Tue)', value: 'Tue' },
-  { label: 'Wednesday (Wed)', value: 'Wed' },
-  { label: 'Thursday (Thu)', value: 'Thu' },
-  { label: 'Friday (Fri)', value: 'Fri' },
-  { label: 'Saturday (Sat)', value: 'Sat' },
-  { label: 'Sunday (Sun)', value: 'Sun' },
+  { label: 'Mon', value: 'Mon' },
+  { label: 'Tue', value: 'Tue' },
+  { label: 'Wed', value: 'Wed' },
+  { label: 'Thu', value: 'Thu' },
+  { label: 'Fri', value: 'Fri' },
+  { label: 'Sat', value: 'Sat' },
+  { label: 'Sun', value: 'Sun' },
+];
+
+const AVAILABLE_TIME_SLOTS = [
+  { label: 'Morning: 08:00 AM - 11:00 AM', value: '08:00 AM - 11:00 AM' },
+  { label: 'Morning: 09:00 AM - 12:00 PM', value: '09:00 AM - 12:00 PM' },
+  { label: 'Midday: 12:00 PM - 03:00 PM', value: '12:00 PM - 03:00 PM' },
+  { label: 'Afternoon: 02:00 PM - 05:00 PM', value: '02:00 PM - 05:00 PM' },
+  { label: 'Evening: 05:00 PM - 08:00 PM', value: '05:00 PM - 08:00 PM' },
+  { label: 'Night: 07:00 PM - 10:00 PM', value: '07:00 PM - 10:00 PM' },
 ];
 
 export const AdminDoctors = () => {
@@ -95,6 +105,9 @@ export const AdminDoctors = () => {
         availability: values.availability && values.availability.length > 0
           ? values.availability
           : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+        timeSlots: values.timeSlots && values.timeSlots.length > 0
+          ? values.timeSlots
+          : ['09:00 AM - 12:00 PM', '02:00 PM - 05:00 PM'],
       });
       message.success('Doctor registered successfully!');
       setIsAddModalOpen(false);
@@ -122,7 +135,7 @@ export const AdminDoctors = () => {
     <div>
       <PageHeader
         title="Doctor & Specialist Roster"
-        subtitle="Manage hospital physicians, clinical credentials, weekly availability, and department assignments"
+        subtitle="Manage hospital physicians, weekly availability, consultation time slots, and credentials"
         extra={[
           <Button
             key="add"
@@ -137,9 +150,9 @@ export const AdminDoctors = () => {
       />
 
       {/* Filter Bar */}
-      <Card style={{ marginBottom: 24, borderRadius: 16, border: '1px solid #e2e8f0' }}>
-        <Row gutter={[16, 16]} align="middle">
-          <Col xs={24} md={12}>
+      <Card style={{ marginBottom: 20, borderRadius: 16, border: '1px solid #e2e8f0' }}>
+        <Row gutter={[12, 12]} align="middle">
+          <Col xs={24} sm={14} md={12}>
             <Input
               prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
               placeholder="Search doctors by name or specialty..."
@@ -149,7 +162,7 @@ export const AdminDoctors = () => {
               allowClear
             />
           </Col>
-          <Col xs={24} md={12}>
+          <Col xs={24} sm={10} md={12}>
             <Select
               value={selectedSpecialty}
               onChange={(val) => setSelectedSpecialty(val)}
@@ -167,25 +180,25 @@ export const AdminDoctors = () => {
       </Card>
 
       {/* Doctor Grid */}
-      <Row gutter={[20, 20]}>
+      <Row gutter={[16, 16]}>
         {filteredDoctors.map((doc) => (
           <Col xs={24} sm={12} lg={8} key={doc.id}>
             <Card
               hoverable
-              style={{ borderRadius: 16, border: '1px solid #e2e8f0', height: '100%' }}
-              styles={{ body: { padding: 20 } }}
+              style={{ borderRadius: 16, border: '1px solid #e2e8f0', height: '100%', display: 'flex', flexDirection: 'column' }}
+              styles={{ body: { padding: 18, flex: 1, display: 'flex', flexDirection: 'column' } }}
             >
-              <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-                <Avatar size={64} src={doc.avatar} style={{ border: '2px solid #0d9488' }} />
-                <div style={{ flex: 1 }}>
-                  <Title level={5} style={{ margin: 0 }}>
+              <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+                <Avatar size={58} src={doc.avatar} style={{ border: '2px solid #0d9488', flexShrink: 0 }} />
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <Title level={5} style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {doc.name}
                   </Title>
                   <Tag color="geekblue" style={{ marginTop: 4 }}>
                     {doc.specialty}
                   </Tag>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
-                    <StarFilled style={{ color: '#f59e0b', fontSize: 13 }} />
+                    <StarFilled style={{ color: '#f59e0b', fontSize: 12 }} />
                     <Text strong style={{ fontSize: 12 }}>
                       {doc.rating}
                     </Text>
@@ -196,19 +209,36 @@ export const AdminDoctors = () => {
                 </div>
               </div>
 
-              <div style={{ marginTop: 14, fontSize: 13, color: '#64748b', display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ marginTop: 14, fontSize: 13, color: '#64748b', display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
                 <div>🏥 {doc.department}</div>
                 <div>💼 {doc.experience} Experience</div>
-                <div>💵 ${doc.fee} Consultation Fee</div>
-                <div style={{ marginTop: 4 }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: '#334155' }}>
+                <div>💵 <strong style={{ color: '#0d9488' }}>${doc.fee}</strong> Consultation Fee</div>
+
+                {/* Available Days */}
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: '#334155', marginBottom: 2 }}>
                     <CalendarOutlined style={{ marginRight: 4, color: '#0d9488' }} />
-                    Available:
-                  </span>{' '}
-                  <Space size={2} wrap style={{ marginTop: 4 }}>
+                    Available Days:
+                  </div>
+                  <Space size={3} wrap>
                     {doc.availability?.map((day) => (
-                      <Tag key={day} color="cyan" style={{ fontSize: 10, marginInlineEnd: 4, padding: '0 4px' }}>
+                      <Tag key={day} color="cyan" style={{ fontSize: 11, marginInlineEnd: 3, padding: '0 5px' }}>
                         {day}
+                      </Tag>
+                    ))}
+                  </Space>
+                </div>
+
+                {/* Available Time Slots */}
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: '#334155', marginBottom: 2 }}>
+                    <ClockCircleOutlined style={{ marginRight: 4, color: '#0284c7' }} />
+                    Time Slots:
+                  </div>
+                  <Space size={3} wrap>
+                    {(doc.timeSlots || ['09:00 AM - 12:00 PM', '02:00 PM - 05:00 PM']).map((slot) => (
+                      <Tag key={slot} color="blue" style={{ fontSize: 10, marginInlineEnd: 3, padding: '0 4px' }}>
+                        {slot}
                       </Tag>
                     ))}
                   </Space>
@@ -257,11 +287,12 @@ export const AdminDoctors = () => {
 
       {/* Add Doctor Modal */}
       <Modal
-        title="Add New Doctor"
+        title="Add New Doctor & Availability"
         open={isAddModalOpen}
         onCancel={() => setIsAddModalOpen(false)}
         footer={null}
-        width={650}
+        width="100%"
+        style={{ maxWidth: 660 }}
       >
         <Form
           form={form}
@@ -269,18 +300,19 @@ export const AdminDoctors = () => {
           onFinish={handleAddDoctor}
           initialValues={{
             availability: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+            timeSlots: ['09:00 AM - 12:00 PM', '02:00 PM - 05:00 PM'],
             experience: 8,
             fee: 150,
           }}
           style={{ paddingTop: 12 }}
         >
-          <Row gutter={16}>
-            <Col span={14}>
+          <Row gutter={[12, 0]}>
+            <Col xs={24} sm={14}>
               <Form.Item name="name" label="Doctor's Full Name" rules={[{ required: true, message: 'Please enter doctor name' }]}>
                 <Input placeholder="Dr. John Smith, MD" />
               </Form.Item>
             </Col>
-            <Col span={10}>
+            <Col xs={24} sm={10}>
               <Form.Item name="specialty" label="Medical Specialty" rules={[{ required: true, message: 'Please select specialty' }]}>
                 <Select placeholder="Select specialty">
                   <Option value="Cardiology">Cardiology</Option>
@@ -294,26 +326,26 @@ export const AdminDoctors = () => {
             </Col>
           </Row>
 
-          <Row gutter={16}>
-            <Col span={12}>
+          <Row gutter={[12, 0]}>
+            <Col xs={24} sm={12}>
               <Form.Item name="experience" label="Years of Experience" rules={[{ required: true }]}>
                 <Input placeholder="e.g. 10" type="number" suffix="Years" />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="fee" label="Consultation Fee ($)" rules={[{ required: true }]}>
                 <Input placeholder="150" type="number" prefix="$" />
               </Form.Item>
             </Col>
           </Row>
 
-          <Row gutter={16}>
-            <Col span={12}>
+          <Row gutter={[12, 0]}>
+            <Col xs={24} sm={12}>
               <Form.Item name="email" label="Contact Email">
                 <Input placeholder="doctor@vibemed.health" />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="phone" label="Contact Phone">
                 <Input placeholder="+1 (555) 000-0000" />
               </Form.Item>
@@ -323,14 +355,31 @@ export const AdminDoctors = () => {
           {/* Weekday Availability Days */}
           <Form.Item
             name="availability"
-            label="Doctor Availability (Days of the Week)"
+            label="Available Days (Week Schedule)"
             rules={[{ required: true, message: 'Please select at least one available day' }]}
-            tooltip="Select the days this physician is available for appointments and consultations"
+            tooltip="Select days when the doctor is available for consultations"
           >
-            <Checkbox.Group options={WEEKDAYS} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }} />
+            <Checkbox.Group options={WEEKDAYS} style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }} />
           </Form.Item>
 
-          <Form.Item style={{ marginTop: 20, marginBottom: 0 }}>
+          {/* Time Slots */}
+          <Form.Item
+            name="timeSlots"
+            label="Daily Consultation Time Slots"
+            rules={[{ required: true, message: 'Please select at least one consultation time slot' }]}
+            tooltip="Select one or multiple consultation hours / slots for each day"
+          >
+            <Select
+              mode="multiple"
+              allowClear
+              placeholder="Select available time slots"
+              options={AVAILABLE_TIME_SLOTS}
+              style={{ width: '100%' }}
+              size="large"
+            />
+          </Form.Item>
+
+          <Form.Item style={{ marginTop: 24, marginBottom: 0 }}>
             <Button
               type="primary"
               htmlType="submit"

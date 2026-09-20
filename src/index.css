@@ -229,11 +229,36 @@ body {
     max-width: calc(100vw - 20px) !important;
     margin: 10px auto !important;
   }
+
+  /* Page Header title and actions on small mobile */
+  .ant-typography h3 {
+    font-size: 20px !important;
+  }
+
+  /* Tabs touch scroll */
+  .ant-tabs-nav {
+    overflow-x: auto !important;
+    max-width: 100% !important;
+  }
 }
 
-/* Custom Table Scrollbar for touch & mobile */
+/* =========================================================
+   COMPREHENSIVE RESPONSIVE TABLES & CONTAINERS
+   ========================================================= */
 .ant-table-wrapper {
-  max-width: 100%;
+  max-width: 100% !important;
+  width: 100% !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ant-table {
+  max-width: 100% !important;
+}
+
+.ant-table-content {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
 }
 
 .ant-table-content::-webkit-scrollbar {
@@ -243,4 +268,22 @@ body {
 .ant-table-content::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 4px;
+}
+
+.ant-card {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Prevent inputs from overflowing */
+.ant-form-item-control-input-content {
+  max-width: 100%;
+}
+
+.ant-picker {
+  max-width: 100% !important;
+}
+
+.ant-select {
+  max-width: 100% !important;
 }
