@@ -17,18 +17,18 @@ import {
   Checkbox,
   Popconfirm,
   Tooltip,
+  Divider,
 } from 'antd';
 import {
   MedicineBoxOutlined,
   PlusOutlined,
   SearchOutlined,
-  PhoneOutlined,
-  MailOutlined,
   StarFilled,
   DeleteOutlined,
   CalendarOutlined,
   ClockCircleOutlined,
   EyeOutlined,
+  CheckOutlined,
 } from '@ant-design/icons';
 import { PageHeader } from '../../components/common/PageHeader';
 import { doctorService } from '../../services/doctorService';
@@ -47,13 +47,13 @@ const WEEKDAYS = [
   { label: 'Sun', value: 'Sun' },
 ];
 
-const AVAILABLE_TIME_SLOTS = [
-  { label: 'Morning: 08:00 AM - 11:00 AM', value: '08:00 AM - 11:00 AM' },
-  { label: 'Morning: 09:00 AM - 12:00 PM', value: '09:00 AM - 12:00 PM' },
-  { label: 'Midday: 12:00 PM - 03:00 PM', value: '12:00 PM - 03:00 PM' },
-  { label: 'Afternoon: 02:00 PM - 05:00 PM', value: '02:00 PM - 05:00 PM' },
-  { label: 'Evening: 05:00 PM - 08:00 PM', value: '05:00 PM - 08:00 PM' },
-  { label: 'Night: 07:00 PM - 10:00 PM', value: '07:00 PM - 10:00 PM' },
+const DEFAULT_TIME_SLOTS = [
+  { label: '08:00 AM - 11:00 AM (Morning)', value: '08:00 AM - 11:00 AM' },
+  { label: '09:00 AM - 12:00 PM (Morning)', value: '09:00 AM - 12:00 PM' },
+  { label: '12:00 PM - 03:00 PM (Midday)', value: '12:00 PM - 03:00 PM' },
+  { label: '02:00 PM - 05:00 PM (Afternoon)', value: '02:00 PM - 05:00 PM' },
+  { label: '05:00 PM - 08:00 PM (Evening)', value: '05:00 PM - 08:00 PM' },
+  { label: '07:00 PM - 10:00 PM (Night)', value: '07:00 PM - 10:00 PM' },
 ];
 
 export const AdminDoctors = () => {
@@ -63,6 +63,8 @@ export const AdminDoctors = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [availableSlots, setAvailableSlots] = useState(DEFAULT_TIME_SLOTS);
+  const [customSlot, setCustomSlot] = useState('');
   const [form] = Form.useForm();
 
   const loadDoctors = async () => {
@@ -89,6 +91,25 @@ export const AdminDoctors = () => {
     }
     setFilteredDoctors(result);
   }, [selectedSpecialty, searchQuery, doctors]);
+
+  const handleAddCustomSlot = () => {
+    if (!customSlot.trim()) return;
+    const trimmed = customSlot.trim();
+    if (availableSlots.some((s) => s.value === trimmed)) {
+      message.info('This time slot is already in the list');
+      return;
+    }
+    const newSlot = { label: trimmed, value: trimmed };
+    setAvailableSlots([...availableSlots, newSlot]);
+    
+    // Auto-select the newly added slot
+    const currentSlots = form.getFieldValue('timeSlots') || [];
+    form.setFieldsValue({
+      timeSlots: [...currentSlots, trimmed],
+    });
+    setCustomSlot('');
+    message.success(`Added slot: ${trimmed}`);
+  };
 
   const handleAddDoctor = async (values) => {
     try {
@@ -233,11 +254,11 @@ export const AdminDoctors = () => {
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 600, color: '#334155', marginBottom: 2 }}>
                     <ClockCircleOutlined style={{ marginRight: 4, color: '#0284c7' }} />
-                    Time Slots:
+                    Consultation Time Slots:
                   </div>
                   <Space size={3} wrap>
                     {(doc.timeSlots || ['09:00 AM - 12:00 PM', '02:00 PM - 05:00 PM']).map((slot) => (
-                      <Tag key={slot} color="blue" style={{ fontSize: 10, marginInlineEnd: 3, padding: '0 4px' }}>
+                      <Tag key={slot} color="blue" style={{ fontSize: 11, marginInlineEnd: 3, padding: '1px 6px' }}>
                         {slot}
                       </Tag>
                     ))}
@@ -287,12 +308,17 @@ export const AdminDoctors = () => {
 
       {/* Add Doctor Modal */}
       <Modal
-        title="Add New Doctor & Availability"
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <MedicineBoxOutlined style={{ color: '#0d9488', fontSize: 20 }} />
+            <span style={{ fontSize: 17, fontWeight: 700 }}>Add New Doctor & Availability</span>
+          </div>
+        }
         open={isAddModalOpen}
         onCancel={() => setIsAddModalOpen(false)}
         footer={null}
         width="100%"
-        style={{ maxWidth: 660 }}
+        style={{ maxWidth: 700 }}
       >
         <Form
           form={form}
@@ -304,7 +330,7 @@ export const AdminDoctors = () => {
             experience: 8,
             fee: 150,
           }}
-          style={{ paddingTop: 12 }}
+          style={{ paddingTop: 10 }}
         >
           <Row gutter={[12, 0]}>
             <Col xs={24} sm={14}>
@@ -355,28 +381,63 @@ export const AdminDoctors = () => {
           {/* Weekday Availability Days */}
           <Form.Item
             name="availability"
-            label="Available Days (Week Schedule)"
+            label={
+              <span style={{ fontWeight: 600, fontSize: 13 }}>
+                <CalendarOutlined style={{ color: '#0d9488', marginRight: 6 }} />
+                Available Days (Week Schedule)
+              </span>
+            }
             rules={[{ required: true, message: 'Please select at least one available day' }]}
-            tooltip="Select days when the doctor is available for consultations"
           >
-            <Checkbox.Group options={WEEKDAYS} style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }} />
+            <div style={{ background: '#f0fdfa', padding: '12px 14px', borderRadius: 10, border: '1px solid #ccfbf1' }}>
+              <Checkbox.Group options={WEEKDAYS} style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }} />
+            </div>
           </Form.Item>
 
-          {/* Time Slots */}
+          {/* Time Slots Selection */}
           <Form.Item
             name="timeSlots"
-            label="Daily Consultation Time Slots"
+            label={
+              <span style={{ fontWeight: 600, fontSize: 13 }}>
+                <ClockCircleOutlined style={{ color: '#0284c7', marginRight: 6 }} />
+                Daily Consultation Time Slots (Select available slots)
+              </span>
+            }
             rules={[{ required: true, message: 'Please select at least one consultation time slot' }]}
-            tooltip="Select one or multiple consultation hours / slots for each day"
           >
-            <Select
-              mode="multiple"
-              allowClear
-              placeholder="Select available time slots"
-              options={AVAILABLE_TIME_SLOTS}
-              style={{ width: '100%' }}
-              size="large"
-            />
+            <div style={{ background: '#f0f9ff', padding: '12px 14px', borderRadius: 10, border: '1px solid #bae6fd' }}>
+              <Checkbox.Group
+                options={availableSlots}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                  gap: 8,
+                  width: '100%',
+                }}
+              />
+
+              <Divider style={{ margin: '12px 0 10px' }} />
+
+              {/* Add Custom Time Slot Inline */}
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                <Input
+                  size="small"
+                  placeholder="Or type custom slot (e.g. 10:30 AM - 01:30 PM)"
+                  value={customSlot}
+                  onChange={(e) => setCustomSlot(e.target.value)}
+                  onPressEnter={handleAddCustomSlot}
+                  style={{ flex: 1, minWidth: 200, borderRadius: 6 }}
+                />
+                <Button
+                  size="small"
+                  icon={<PlusOutlined />}
+                  onClick={handleAddCustomSlot}
+                  style={{ borderRadius: 6 }}
+                >
+                  Add Custom Slot
+                </Button>
+              </div>
+            </div>
           </Form.Item>
 
           <Form.Item style={{ marginTop: 24, marginBottom: 0 }}>
