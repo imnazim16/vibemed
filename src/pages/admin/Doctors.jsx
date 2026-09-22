@@ -17,7 +17,6 @@ import {
   Checkbox,
   Popconfirm,
   Tooltip,
-  Divider,
 } from 'antd';
 import {
   MedicineBoxOutlined,
@@ -29,13 +28,12 @@ import {
   ClockCircleOutlined,
   EyeOutlined,
   CopyOutlined,
-  CheckCircleOutlined,
 } from '@ant-design/icons';
 import { PageHeader } from '../../components/common/PageHeader';
 import { doctorService } from '../../services/doctorService';
 import { DoctorDetailsModal } from '../../components/modals/DoctorDetailsModal';
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
 
 const WEEKDAY_CONFIG = [
@@ -48,24 +46,62 @@ const WEEKDAY_CONFIG = [
   { key: 'Sun', label: 'Sunday', short: 'Sun' },
 ];
 
-const DEFAULT_SLOT_OPTIONS = [
-  '08:00 AM - 11:00 AM (Morning)',
-  '09:00 AM - 12:00 PM (Morning)',
-  '12:00 PM - 03:00 PM (Midday)',
-  '02:00 PM - 05:00 PM (Afternoon)',
-  '05:00 PM - 08:00 PM (Evening)',
-  '07:00 PM - 10:00 PM (Night)',
+const TIME_OPTIONS = [
+  '06:00 AM', '06:30 AM', '07:00 AM', '07:30 AM', '08:00 AM', '08:30 AM',
+  '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
+  '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM',
+  '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM',
+  '06:00 PM', '06:30 PM', '07:00 PM', '07:30 PM', '08:00 PM', '08:30 PM',
+  '09:00 PM', '09:30 PM', '10:00 PM', '10:30 PM', '11:00 PM'
 ];
 
-const INITIAL_SCHEDULE = {
-  Mon: { enabled: true, slots: ['09:00 AM - 12:00 PM (Morning)', '02:00 PM - 05:00 PM (Afternoon)'] },
-  Tue: { enabled: true, slots: ['09:00 AM - 12:00 PM (Morning)', '02:00 PM - 05:00 PM (Afternoon)'] },
-  Wed: { enabled: true, slots: ['09:00 AM - 12:00 PM (Morning)', '02:00 PM - 05:00 PM (Afternoon)'] },
-  Thu: { enabled: true, slots: ['09:00 AM - 12:00 PM (Morning)', '02:00 PM - 05:00 PM (Afternoon)'] },
-  Fri: { enabled: true, slots: ['09:00 AM - 12:00 PM (Morning)', '02:00 PM - 05:00 PM (Afternoon)'] },
-  Sat: { enabled: false, slots: ['09:00 AM - 12:00 PM (Morning)'] },
-  Sun: { enabled: false, slots: [] },
-};
+const createInitialSlots = () => ({
+  Mon: {
+    enabled: true,
+    slots: [
+      { id: 'mon_1', start: '09:00 AM', end: '01:00 PM' },
+      { id: 'mon_2', start: '02:00 PM', end: '05:00 PM' },
+    ],
+  },
+  Tue: {
+    enabled: true,
+    slots: [
+      { id: 'tue_1', start: '09:00 AM', end: '01:00 PM' },
+      { id: 'tue_2', start: '02:00 PM', end: '05:00 PM' },
+    ],
+  },
+  Wed: {
+    enabled: true,
+    slots: [
+      { id: 'wed_1', start: '09:00 AM', end: '01:00 PM' },
+      { id: 'wed_2', start: '02:00 PM', end: '05:00 PM' },
+    ],
+  },
+  Thu: {
+    enabled: true,
+    slots: [
+      { id: 'thu_1', start: '09:00 AM', end: '01:00 PM' },
+      { id: 'thu_2', start: '02:00 PM', end: '05:00 PM' },
+    ],
+  },
+  Fri: {
+    enabled: true,
+    slots: [
+      { id: 'fri_1', start: '09:00 AM', end: '01:00 PM' },
+      { id: 'fri_2', start: '02:00 PM', end: '05:00 PM' },
+    ],
+  },
+  Sat: {
+    enabled: false,
+    slots: [
+      { id: 'sat_1', start: '09:00 AM', end: '01:00 PM' },
+    ],
+  },
+  Sun: {
+    enabled: false,
+    slots: [],
+  },
+});
 
 export const AdminDoctors = () => {
   const [doctors, setDoctors] = useState([]);
@@ -75,10 +111,8 @@ export const AdminDoctors = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
 
-  // Weekday schedule state with time slot checkboxes per day
-  const [weekdaySchedule, setWeekdaySchedule] = useState(INITIAL_SCHEDULE);
-  const [slotOptions, setSlotOptions] = useState(DEFAULT_SLOT_OPTIONS);
-  const [customSlotInput, setCustomSlotInput] = useState('');
+  // Weekday schedule state: Each day has its own array of { id, start, end } slots
+  const [weekdaySchedule, setWeekdaySchedule] = useState(createInitialSlots);
 
   const [form] = Form.useForm();
 
@@ -114,22 +148,65 @@ export const AdminDoctors = () => {
       [dayKey]: {
         ...prev[dayKey],
         enabled: checked,
-        slots: checked
-          ? prev[dayKey].slots.length > 0
-            ? prev[dayKey].slots
-            : ['09:00 AM - 12:00 PM (Morning)', '02:00 PM - 05:00 PM (Afternoon)']
+        slots: checked && prev[dayKey].slots.length === 0
+          ? [{ id: `${dayKey}_${Date.now()}`, start: '09:00 AM', end: '01:00 PM' }]
           : prev[dayKey].slots,
       },
     }));
   };
 
-  // Update time slot checkboxes for a specific day
-  const handleSlotChange = (dayKey, selectedSlots) => {
+  // Add a new slot to a specific day
+  const handleAddSlotToDay = (dayKey) => {
+    setWeekdaySchedule((prev) => {
+      const currentSlots = prev[dayKey]?.slots || [];
+      let newStart = '02:00 PM';
+      let newEnd = '05:00 PM';
+
+      if (currentSlots.length > 0) {
+        const lastSlot = currentSlots[currentSlots.length - 1];
+        newStart = lastSlot.end || '02:00 PM';
+        const idx = TIME_OPTIONS.indexOf(newStart);
+        newEnd = idx !== -1 && idx + 6 < TIME_OPTIONS.length ? TIME_OPTIONS[idx + 6] : '06:00 PM';
+      }
+
+      const newSlot = {
+        id: `${dayKey}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+        start: newStart,
+        end: newEnd,
+      };
+
+      return {
+        ...prev,
+        [dayKey]: {
+          enabled: true,
+          slots: [...currentSlots, newSlot],
+        },
+      };
+    });
+  };
+
+  // Remove a slot from a specific day
+  const handleRemoveSlotFromDay = (dayKey, slotId) => {
+    setWeekdaySchedule((prev) => {
+      const updatedSlots = prev[dayKey].slots.filter((s) => s.id !== slotId);
+      return {
+        ...prev,
+        [dayKey]: {
+          ...prev[dayKey],
+          slots: updatedSlots,
+          enabled: updatedSlots.length > 0 ? prev[dayKey].enabled : false,
+        },
+      };
+    });
+  };
+
+  // Update start or end time for a specific slot
+  const handleUpdateSlotTime = (dayKey, slotId, field, value) => {
     setWeekdaySchedule((prev) => ({
       ...prev,
       [dayKey]: {
         ...prev[dayKey],
-        slots: selectedSlots,
+        slots: prev[dayKey].slots.map((s) => (s.id === slotId ? { ...s, [field]: value } : s)),
       },
     }));
   };
@@ -141,7 +218,10 @@ export const AdminDoctors = () => {
       ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].forEach((d) => {
         updated[d] = {
           enabled: true,
-          slots: ['09:00 AM - 12:00 PM (Morning)', '02:00 PM - 05:00 PM (Afternoon)'],
+          slots: [
+            { id: `${d}_1`, start: '09:00 AM', end: '01:00 PM' },
+            { id: `${d}_2`, start: '02:00 PM', end: '05:00 PM' },
+          ],
         };
       });
       ['Sat', 'Sun'].forEach((d) => {
@@ -152,51 +232,29 @@ export const AdminDoctors = () => {
     message.success('Applied standard Mon-Fri schedule');
   };
 
-  // Quick preset: All 7 days
-  const applyAll7Days = () => {
-    setWeekdaySchedule((prev) => {
-      const updated = { ...prev };
-      WEEKDAY_CONFIG.forEach(({ key }) => {
-        updated[key] = {
-          enabled: true,
-          slots: ['09:00 AM - 12:00 PM (Morning)', '02:00 PM - 05:00 PM (Afternoon)'],
-        };
-      });
-      return updated;
-    });
-    message.success('Enabled all 7 days with standard time slots');
-  };
-
-  // Quick action: Copy Monday slots to all enabled days
+  // Quick action: Copy Monday slots to all active days
   const copyMondaySlotsToAll = () => {
     const mondaySlots = weekdaySchedule.Mon?.slots || [];
     if (mondaySlots.length === 0) {
-      message.warning('Monday has no slots selected to copy');
+      message.warning('Monday has no slots configured to copy');
       return;
     }
     setWeekdaySchedule((prev) => {
       const updated = { ...prev };
       WEEKDAY_CONFIG.forEach(({ key }) => {
-        if (updated[key].enabled) {
-          updated[key] = { ...updated[key], slots: [...mondaySlots] };
+        if (updated[key].enabled && key !== 'Mon') {
+          updated[key] = {
+            ...updated[key],
+            slots: mondaySlots.map((s) => ({
+              ...s,
+              id: `${key}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+            })),
+          };
         }
       });
       return updated;
     });
     message.success('Replicated Monday time slots to all active weekdays');
-  };
-
-  // Add a new custom time slot option to the pool
-  const handleAddCustomSlot = () => {
-    const trimmed = customSlotInput.trim();
-    if (!trimmed) return;
-    if (slotOptions.includes(trimmed)) {
-      message.info('This time slot is already in the options');
-      return;
-    }
-    setSlotOptions([...slotOptions, trimmed]);
-    setCustomSlotInput('');
-    message.success(`Added slot option: "${trimmed}"`);
   };
 
   const handleAddDoctor = async (values) => {
@@ -205,13 +263,24 @@ export const AdminDoctors = () => {
     );
 
     if (enabledDays.length === 0) {
-      message.error('Please check at least one weekday and select its time slots');
+      message.error('Please configure at least one active weekday with start and end time slots');
       return;
     }
 
-    const allUniqueSlots = Array.from(
-      new Set(enabledDays.flatMap((day) => weekdaySchedule[day].slots))
-    );
+    // Format slots as string array e.g. "09:00 AM - 01:00 PM"
+    const formattedSchedule = {};
+    const allFormattedSlots = [];
+
+    enabledDays.forEach((day) => {
+      const daySlots = weekdaySchedule[day].slots.map((s) => `${s.start} - ${s.end}`);
+      formattedSchedule[day] = {
+        enabled: true,
+        slots: daySlots,
+      };
+      allFormattedSlots.push(...daySlots);
+    });
+
+    const uniqueSlots = Array.from(new Set(allFormattedSlots));
 
     try {
       await doctorService.addDoctor({
@@ -225,13 +294,13 @@ export const AdminDoctors = () => {
         phone: values.phone || '+1 (555) 000-0000',
         email: values.email || 'doctor@vibemed.health',
         availability: enabledDays,
-        timeSlots: allUniqueSlots,
-        weekdaySchedule: weekdaySchedule,
+        timeSlots: uniqueSlots,
+        weekdaySchedule: formattedSchedule,
       });
-      message.success('Doctor registered with weekday time slot schedule!');
+      message.success('Doctor registered with custom weekday time slots!');
       setIsAddModalOpen(false);
       form.resetFields();
-      setWeekdaySchedule(INITIAL_SCHEDULE);
+      setWeekdaySchedule(createInitialSlots());
       loadDoctors();
     } catch {
       message.error('Failed to add doctor');
@@ -417,7 +486,7 @@ export const AdminDoctors = () => {
         onCancel={() => setIsAddModalOpen(false)}
         footer={null}
         width="100%"
-        style={{ maxWidth: 780 }}
+        style={{ maxWidth: 800 }}
       >
         <Form
           form={form}
@@ -476,7 +545,7 @@ export const AdminDoctors = () => {
           </Row>
 
           {/* ========================================================
-              WEEKDAY BOX: EACH WEEKDAY WITH ITS OWN TIME SLOT CHECKBOXES
+              WEEKDAY BOX: START TIME & END TIME SELECTBOXES WITH "+ ADD SLOT"
              ======================================================== */}
           <div
             style={{
@@ -488,7 +557,7 @@ export const AdminDoctors = () => {
               marginBottom: 20,
             }}
           >
-            {/* Box Header & Quick Batch Actions */}
+            {/* Box Header & Batch Actions */}
             <div
               style={{
                 display: 'flex',
@@ -504,22 +573,19 @@ export const AdminDoctors = () => {
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <CalendarOutlined style={{ color: '#0d9488', fontSize: 16 }} />
-                  <span style={{ fontWeight: 700, fontSize: 14, color: '#0f172a' }}>
-                    Weekday Availability & Time Slot Checkboxes
+                  <span style={{ fontWeight: 700, fontSize: 15, color: '#0f172a' }}>
+                    Weekday Time Slots (Start Time & End Time Selectboxes)
                   </span>
                 </div>
                 <Text type="secondary" style={{ fontSize: 12 }}>
-                  Check weekdays the doctor practices and check each day's consultation hours.
+                  Set start & end time for each slot. Click "+ Add Slot" to add multiple consultation slots in a day.
                 </Text>
               </div>
 
-              {/* Quick Action Buttons */}
+              {/* Quick Preset Buttons */}
               <Space size={6} wrap>
                 <Button size="small" onClick={applyMonToFri} style={{ fontSize: 12, borderRadius: 6 }}>
-                  Mon - Fri
-                </Button>
-                <Button size="small" onClick={applyAll7Days} style={{ fontSize: 12, borderRadius: 6 }}>
-                  All 7 Days
+                  Mon - Fri Standard
                 </Button>
                 <Button
                   size="small"
@@ -527,13 +593,13 @@ export const AdminDoctors = () => {
                   onClick={copyMondaySlotsToAll}
                   style={{ fontSize: 12, borderRadius: 6, color: '#0d9488', borderColor: '#0d9488' }}
                 >
-                  Copy Mon Slots
+                  Copy Mon Slots to All
                 </Button>
               </Space>
             </div>
 
-            {/* List of 7 Weekdays with Time Slot Checkboxes */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {/* List of 7 Weekdays */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {WEEKDAY_CONFIG.map(({ key, label }) => {
                 const dayData = weekdaySchedule[key] || { enabled: false, slots: [] };
                 const isEnabled = dayData.enabled;
@@ -542,7 +608,7 @@ export const AdminDoctors = () => {
                   <div
                     key={key}
                     style={{
-                      background: isEnabled ? '#ffffff' : '#f1f5f9',
+                      background: isEnabled ? '#ffffff' : '#f8fafc',
                       border: isEnabled ? '1.5px solid #0d9488' : '1px dashed #cbd5e1',
                       borderRadius: 10,
                       padding: '12px 14px',
@@ -557,92 +623,120 @@ export const AdminDoctors = () => {
                         alignItems: 'center',
                         flexWrap: 'wrap',
                         gap: 8,
-                        marginBottom: isEnabled ? 10 : 0,
+                        marginBottom: isEnabled && dayData.slots.length > 0 ? 10 : 0,
                       }}
                     >
-                      <Checkbox
-                        checked={isEnabled}
-                        onChange={(e) => toggleDayEnabled(key, e.target.checked)}
-                      >
-                        <span style={{ fontWeight: 700, fontSize: 14, color: isEnabled ? '#0f172a' : '#64748b' }}>
-                          {label}
-                        </span>
-                      </Checkbox>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <Checkbox
+                          checked={isEnabled}
+                          onChange={(e) => toggleDayEnabled(key, e.target.checked)}
+                        >
+                          <span style={{ fontWeight: 700, fontSize: 14, color: isEnabled ? '#0f172a' : '#64748b' }}>
+                            {label}
+                          </span>
+                        </Checkbox>
 
-                      {isEnabled ? (
-                        <Tag color="cyan" style={{ margin: 0, fontWeight: 600, fontSize: 11 }}>
-                          <ClockCircleOutlined style={{ marginRight: 4 }} />
-                          {dayData.slots.length} Slots Selected
-                        </Tag>
-                      ) : (
-                        <Tag color="default" style={{ margin: 0, color: '#94a3b8', fontSize: 11 }}>
-                          Day Off (Click checkbox to enable)
-                        </Tag>
-                      )}
-                    </div>
+                        {isEnabled ? (
+                          <Tag color="cyan" style={{ margin: 0, fontWeight: 600, fontSize: 11 }}>
+                            <ClockCircleOutlined style={{ marginRight: 4 }} />
+                            {dayData.slots.length} {dayData.slots.length === 1 ? 'Slot' : 'Slots'} Configured
+                          </Tag>
+                        ) : (
+                          <Tag color="default" style={{ margin: 0, color: '#94a3b8', fontSize: 11 }}>
+                            Day Off
+                          </Tag>
+                        )}
+                      </div>
 
-                    {/* Time Slot Checkboxes for this Day */}
-                    {isEnabled && (
-                      <div
+                      {/* Add Slot Button for this specific day */}
+                      <Button
+                        size="small"
+                        type={isEnabled ? 'dashed' : 'default'}
+                        icon={<PlusOutlined />}
+                        onClick={() => handleAddSlotToDay(key)}
                         style={{
-                          background: '#f0fdfa',
-                          padding: '10px 12px',
-                          borderRadius: 8,
-                          border: '1px solid #ccfbf1',
+                          fontSize: 12,
+                          borderRadius: 6,
+                          borderColor: '#0d9488',
+                          color: '#0d9488',
+                          fontWeight: 600,
                         }}
                       >
-                        <Checkbox.Group
-                          options={slotOptions.map((slot) => ({
-                            label: <span style={{ fontSize: 12 }}>{slot}</span>,
-                            value: slot,
-                          }))}
-                          value={dayData.slots}
-                          onChange={(selected) => handleSlotChange(key, selected)}
-                          style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                            gap: 6,
-                            width: '100%',
-                          }}
-                        />
+                        + Add Slot
+                      </Button>
+                    </div>
+
+                    {/* Time Slot Rows with Start & End Time Selectboxes */}
+                    {isEnabled && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
+                        {dayData.slots.length === 0 ? (
+                          <div style={{ padding: '8px 12px', background: '#fef3c7', borderRadius: 8, fontSize: 12, color: '#b45309' }}>
+                            No slots configured for this day. Click "+ Add Slot" above to set consultation hours.
+                          </div>
+                        ) : (
+                          dayData.slots.map((slot, index) => (
+                            <div
+                              key={slot.id || index}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 8,
+                                flexWrap: 'wrap',
+                                background: '#f0fdfa',
+                                padding: '8px 12px',
+                                borderRadius: 8,
+                                border: '1px solid #ccfbf1',
+                              }}
+                            >
+                              <span style={{ fontSize: 12, fontWeight: 700, color: '#0f766e', minWidth: 48 }}>
+                                Slot {index + 1}:
+                              </span>
+
+                              {/* Start Time Selectbox */}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <Text type="secondary" style={{ fontSize: 11 }}>Start Time:</Text>
+                                <Select
+                                  size="small"
+                                  value={slot.start}
+                                  onChange={(val) => handleUpdateSlotTime(key, slot.id, 'start', val)}
+                                  style={{ width: 115 }}
+                                  options={TIME_OPTIONS.map((t) => ({ label: t, value: t }))}
+                                />
+                              </div>
+
+                              <span style={{ color: '#0d9488', fontSize: 12, fontWeight: 700 }}>to</span>
+
+                              {/* End Time Selectbox */}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <Text type="secondary" style={{ fontSize: 11 }}>End Time:</Text>
+                                <Select
+                                  size="small"
+                                  value={slot.end}
+                                  onChange={(val) => handleUpdateSlotTime(key, slot.id, 'end', val)}
+                                  style={{ width: 115 }}
+                                  options={TIME_OPTIONS.map((t) => ({ label: t, value: t }))}
+                                />
+                              </div>
+
+                              {/* Remove Slot Button */}
+                              <Tooltip title="Delete this slot">
+                                <Button
+                                  type="text"
+                                  danger
+                                  size="small"
+                                  icon={<DeleteOutlined />}
+                                  onClick={() => handleRemoveSlotFromDay(key, slot.id)}
+                                  style={{ marginLeft: 'auto' }}
+                                />
+                              </Tooltip>
+                            </div>
+                          ))
+                        )}
                       </div>
                     )}
                   </div>
                 );
               })}
-            </div>
-
-            {/* Custom Time Slot Adder */}
-            <div
-              style={{
-                marginTop: 14,
-                paddingTop: 12,
-                borderTop: '1px solid #e2e8f0',
-                display: 'flex',
-                gap: 8,
-                alignItems: 'center',
-                flexWrap: 'wrap',
-              }}
-            >
-              <Text style={{ fontSize: 12, fontWeight: 600, color: '#475569' }}>
-                Need a different time slot?
-              </Text>
-              <Input
-                size="small"
-                placeholder="e.g. 10:30 AM - 01:30 PM (Custom)"
-                value={customSlotInput}
-                onChange={(e) => setCustomSlotInput(e.target.value)}
-                onPressEnter={handleAddCustomSlot}
-                style={{ flex: 1, minWidth: 200, borderRadius: 6 }}
-              />
-              <Button
-                size="small"
-                icon={<PlusOutlined />}
-                onClick={handleAddCustomSlot}
-                style={{ borderRadius: 6 }}
-              >
-                Add Slot Option
-              </Button>
             </div>
           </div>
 
