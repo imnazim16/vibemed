@@ -1,5 +1,18 @@
 // Mock Doctor Service
 
+const makeSchedule = (availability, slots) => {
+  const allDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const sched = {};
+  allDays.forEach((day) => {
+    const isAvailable = availability.includes(day);
+    sched[day] = {
+      enabled: isAvailable,
+      slots: isAvailable ? [...slots] : [],
+    };
+  });
+  return sched;
+};
+
 const INITIAL_DOCTORS = [
   {
     id: 'doc_1',
@@ -16,6 +29,7 @@ const INITIAL_DOCTORS = [
     education: 'Johns Hopkins School of Medicine',
     availability: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
     timeSlots: ['09:00 AM - 12:00 PM', '02:00 PM - 05:00 PM'],
+    weekdaySchedule: makeSchedule(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], ['09:00 AM - 12:00 PM', '02:00 PM - 05:00 PM']),
     phone: '+1 (555) 234-5678',
     email: 'dr.sarah@vibemed.health',
     patientsCount: 420,
@@ -35,6 +49,7 @@ const INITIAL_DOCTORS = [
     education: 'Harvard Medical School',
     availability: ['Mon', 'Wed', 'Fri'],
     timeSlots: ['10:00 AM - 01:00 PM', '03:00 PM - 06:00 PM'],
+    weekdaySchedule: makeSchedule(['Mon', 'Wed', 'Fri'], ['10:00 AM - 01:00 PM', '03:00 PM - 06:00 PM']),
     phone: '+1 (555) 345-6789',
     email: 'dr.wilson@vibemed.health',
     patientsCount: 310,
@@ -54,6 +69,7 @@ const INITIAL_DOCTORS = [
     education: 'Stanford University Medical Center',
     availability: ['Tue', 'Thu', 'Sat'],
     timeSlots: ['09:00 AM - 01:00 PM', '04:00 PM - 07:00 PM'],
+    weekdaySchedule: makeSchedule(['Tue', 'Thu', 'Sat'], ['09:00 AM - 01:00 PM', '04:00 PM - 07:00 PM']),
     phone: '+1 (555) 456-7890',
     email: 'dr.emily@vibemed.health',
     patientsCount: 560,
@@ -73,6 +89,7 @@ const INITIAL_DOCTORS = [
     education: 'Columbia University Vagelos',
     availability: ['Mon', 'Tue', 'Thu', 'Fri'],
     timeSlots: ['08:30 AM - 11:30 AM', '01:30 PM - 04:30 PM'],
+    weekdaySchedule: makeSchedule(['Mon', 'Tue', 'Thu', 'Fri'], ['08:30 AM - 11:30 AM', '01:30 PM - 04:30 PM']),
     phone: '+1 (555) 567-8901',
     email: 'dr.marcus@vibemed.health',
     patientsCount: 280,
@@ -92,6 +109,7 @@ const INITIAL_DOCTORS = [
     education: 'UCLA David Geffen School',
     availability: ['Wed', 'Thu', 'Fri', 'Sat'],
     timeSlots: ['11:00 AM - 02:00 PM', '05:00 PM - 08:00 PM'],
+    weekdaySchedule: makeSchedule(['Wed', 'Thu', 'Fri', 'Sat'], ['11:00 AM - 02:00 PM', '05:00 PM - 08:00 PM']),
     phone: '+1 (555) 678-9012',
     email: 'dr.patel@vibemed.health',
     patientsCount: 490,
@@ -115,12 +133,12 @@ export const doctorService = {
 
   getTimeSlots: () => {
     return [
-      '08:00 AM - 11:00 AM (Early Morning)',
-      '09:00 AM - 12:00 PM (Morning Slot)',
-      '12:00 PM - 03:00 PM (Midday Slot)',
-      '02:00 PM - 05:00 PM (Afternoon Slot)',
-      '05:00 PM - 08:00 PM (Evening Slot)',
-      '07:00 PM - 10:00 PM (Night Triage)',
+      '08:00 AM - 11:00 AM',
+      '09:00 AM - 12:00 PM',
+      '12:00 PM - 03:00 PM',
+      '02:00 PM - 05:00 PM',
+      '05:00 PM - 08:00 PM',
+      '07:00 PM - 10:00 PM',
     ];
   },
 
@@ -136,6 +154,7 @@ export const doctorService = {
       timeSlots: doctor.timeSlots && doctor.timeSlots.length > 0
         ? doctor.timeSlots
         : ['09:00 AM - 12:00 PM', '02:00 PM - 05:00 PM'],
+      weekdaySchedule: doctor.weekdaySchedule || makeSchedule(doctor.availability || [], doctor.timeSlots || []),
     };
     doctorsCache = [newDoc, ...doctorsCache];
     return newDoc;

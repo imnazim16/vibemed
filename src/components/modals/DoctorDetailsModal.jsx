@@ -89,15 +89,40 @@ export const DoctorDetailsModal = ({ open, onCancel, doctor, onBook, onDelete })
             ))}
           </Space>
         </Descriptions.Item>
-        <Descriptions.Item label="Consultation Time Slots">
-          <Space size={4} wrap>
-            {(doctor.timeSlots || ['09:00 AM - 12:00 PM', '02:00 PM - 05:00 PM']).map((slot) => (
-              <Tag key={slot} color="blue" icon={<ClockCircleOutlined />}>
-                {slot}
-              </Tag>
-            ))}
-          </Space>
-        </Descriptions.Item>
+        {doctor.weekdaySchedule ? (
+          <Descriptions.Item label="Weekday Time Slots Schedule">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '4px 0' }}>
+              {Object.entries(doctor.weekdaySchedule).map(([day, data]) => (
+                <div key={day} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12 }}>
+                  <span style={{ fontWeight: 700, width: 40, color: '#334155' }}>{day}:</span>
+                  {data?.enabled && data?.slots?.length > 0 ? (
+                    <Space size={3} wrap>
+                      {data.slots.map((slot) => (
+                        <Tag key={slot} color="blue" icon={<ClockCircleOutlined />} style={{ fontSize: 10, margin: 0 }}>
+                          {slot}
+                        </Tag>
+                      ))}
+                    </Space>
+                  ) : (
+                    <Tag color="default" style={{ fontSize: 10, margin: 0, color: '#94a3b8' }}>
+                      Off / Not Available
+                    </Tag>
+                  )}
+                </div>
+              ))}
+            </div>
+          </Descriptions.Item>
+        ) : (
+          <Descriptions.Item label="Consultation Time Slots">
+            <Space size={4} wrap>
+              {(doctor.timeSlots || ['09:00 AM - 12:00 PM', '02:00 PM - 05:00 PM']).map((slot) => (
+                <Tag key={slot} color="blue" icon={<ClockCircleOutlined />}>
+                  {slot}
+                </Tag>
+              ))}
+            </Space>
+          </Descriptions.Item>
+        )}
         <Descriptions.Item label="Contact Email">{doctor.email}</Descriptions.Item>
         <Descriptions.Item label="Contact Phone">{doctor.phone}</Descriptions.Item>
       </Descriptions>
