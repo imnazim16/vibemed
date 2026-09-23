@@ -287,3 +287,43 @@ body {
 .ant-select {
   max-width: 100% !important;
 }
+
+/* =========================================================
+   PRINT & PDF INVOICE EXPORT STYLING
+   ========================================================= */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #vibemed-printable-invoice,
+  #vibemed-printable-invoice * {
+    visibility: visible;
+  }
+  #vibemed-printable-invoice {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    padding: 10px !important;
+    background: #ffffff !important;
+  }
+  .ant-modal-close,
+  .ant-modal-footer,
+  .ant-modal-header {
+    display: none !important;
+  }
+  .ant-modal {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+  .ant-modal-content {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+  .ant-modal-wrap {
+    position: static !important;
+  }
+}

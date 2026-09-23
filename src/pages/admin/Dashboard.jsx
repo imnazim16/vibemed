@@ -8,6 +8,7 @@ import {
   PlusOutlined,
   UserOutlined,
   CheckCircleOutlined,
+  ShopOutlined,
 } from '@ant-design/icons';
 import { PageHeader } from '../../components/common/PageHeader';
 import { StatCard } from '../../components/common/StatCard';
@@ -81,6 +82,22 @@ export const AdminDashboard = () => {
         subtitle="Real-time clinic operations, provider rosters, and appointment throughput"
         extra={[
           <Button
+            key="clinics"
+            icon={<ShopOutlined />}
+            style={{ borderRadius: 8 }}
+            onClick={() => navigate('/admin/clinics')}
+          >
+            Clinics (4 Branches)
+          </Button>,
+          <Button
+            key="revenue"
+            icon={<DollarCircleOutlined />}
+            style={{ borderRadius: 8 }}
+            onClick={() => navigate('/admin/revenue')}
+          >
+            Revenue Suite
+          </Button>,
+          <Button
             key="addDoc"
             type="primary"
             icon={<PlusOutlined />}
@@ -95,48 +112,56 @@ export const AdminDashboard = () => {
       {/* KPI Stats */}
       <Row gutter={[20, 20]} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} lg={6}>
-          <StatCard
-            title="Total Registered Doctors"
-            value={doctors.length || 5}
-            icon={<MedicineBoxOutlined />}
-            trend={12}
-            iconBg="#f0fdfa"
-            iconColor="#0d9488"
-          />
+          <div onClick={() => navigate('/admin/doctors')} style={{ cursor: 'pointer' }}>
+            <StatCard
+              title="Total Registered Doctors"
+              value={doctors.length || 5}
+              icon={<MedicineBoxOutlined />}
+              trend={12}
+              iconBg="#f0fdfa"
+              iconColor="#0d9488"
+            />
+          </div>
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <StatCard
-            title="Active Patients"
-            value={patients.length || 148}
-            icon={<TeamOutlined />}
-            trend={8.4}
-            iconBg="#e0f2fe"
-            iconColor="#0284c7"
-          />
+          <div onClick={() => navigate('/admin/patients')} style={{ cursor: 'pointer' }}>
+            <StatCard
+              title="Active Patients"
+              value={patients.length || 148}
+              icon={<TeamOutlined />}
+              trend={8.4}
+              iconBg="#e0f2fe"
+              iconColor="#0284c7"
+            />
+          </div>
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <StatCard
-            title="Today's Appointments"
-            value={appointments.length || 24}
-            icon={<CalendarOutlined />}
-            trend={15.2}
-            iconBg="#fef3c7"
-            iconColor="#d97706"
-          />
+          <div onClick={() => navigate('/admin/appointments')} style={{ cursor: 'pointer' }}>
+            <StatCard
+              title="Today's Appointments"
+              value={appointments.length || 24}
+              icon={<CalendarOutlined />}
+              trend={15.2}
+              iconBg="#fef3c7"
+              iconColor="#d97706"
+            />
+          </div>
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <StatCard
-            title="Monthly Revenue"
-            value="48,250"
-            prefix="$"
-            icon={<DollarCircleOutlined />}
-            trend={19.5}
-            iconBg="#dcfce7"
-            iconColor="#16a34a"
-          />
+          <div onClick={() => navigate('/admin/revenue')} style={{ cursor: 'pointer' }}>
+            <StatCard
+              title="1-Month Gross Billing"
+              value="63,800"
+              prefix="$"
+              icon={<DollarCircleOutlined />}
+              trend={19.5}
+              iconBg="#dcfce7"
+              iconColor="#16a34a"
+            />
+          </div>
         </Col>
       </Row>
 

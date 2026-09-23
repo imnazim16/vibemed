@@ -18,6 +18,8 @@ import AdminDashboard from '../pages/admin/Dashboard';
 import AdminDoctors from '../pages/admin/Doctors';
 import AdminPatients from '../pages/admin/Patients';
 import AdminAppointments from '../pages/admin/Appointments';
+import Clinics from '../pages/admin/Clinics';
+import Revenue from '../pages/admin/Revenue';
 
 // Doctor Pages
 import DoctorDashboard from '../pages/doctor/Dashboard';
@@ -71,7 +73,9 @@ export const AppRoutes = () => {
       >
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="clinics" element={<Clinics />} />
         <Route path="doctors" element={<AdminDoctors />} />
+        <Route path="revenue" element={<Revenue />} />
         <Route path="patients" element={<AdminPatients />} />
         <Route path="appointments" element={<AdminAppointments />} />
       </Route>

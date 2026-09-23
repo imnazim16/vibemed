@@ -17,6 +17,7 @@ import {
   Checkbox,
   Popconfirm,
   Tooltip,
+  Divider,
 } from 'antd';
 import {
   MedicineBoxOutlined,
@@ -28,12 +29,17 @@ import {
   ClockCircleOutlined,
   EyeOutlined,
   CopyOutlined,
+  ShopOutlined,
+  DollarOutlined,
+  TeamOutlined,
+  AppstoreOutlined,
 } from '@ant-design/icons';
 import { PageHeader } from '../../components/common/PageHeader';
 import { doctorService } from '../../services/doctorService';
+import { clinicService } from '../../services/clinicService';
 import { DoctorDetailsModal } from '../../components/modals/DoctorDetailsModal';
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
 
 const WEEKDAY_CONFIG = [
@@ -52,50 +58,48 @@ const TIME_OPTIONS = [
   '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM',
   '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM',
   '06:00 PM', '06:30 PM', '07:00 PM', '07:30 PM', '08:00 PM', '08:30 PM',
-  '09:00 PM', '09:30 PM', '10:00 PM', '10:30 PM', '11:00 PM'
+  '09:00 PM', '09:30 PM', '10:00 PM', '10:30 PM', '11:00 PM',
 ];
 
 const createInitialSlots = () => ({
   Mon: {
     enabled: true,
     slots: [
-      { id: 'mon_1', start: '09:00 AM', end: '01:00 PM' },
-      { id: 'mon_2', start: '02:00 PM', end: '05:00 PM' },
+      { id: 'mon_1', start: '09:00 AM', end: '01:00 PM', clinicId: 'clinic_1', clinicName: 'Downtown Medical Center' },
+      { id: 'mon_2', start: '04:00 PM', end: '08:00 PM', clinicId: 'clinic_2', clinicName: 'Westside Family Care Clinic' },
     ],
   },
   Tue: {
     enabled: true,
     slots: [
-      { id: 'tue_1', start: '09:00 AM', end: '01:00 PM' },
-      { id: 'tue_2', start: '02:00 PM', end: '05:00 PM' },
+      { id: 'tue_1', start: '09:00 AM', end: '01:00 PM', clinicId: 'clinic_1', clinicName: 'Downtown Medical Center' },
+      { id: 'tue_2', start: '04:00 PM', end: '08:00 PM', clinicId: 'clinic_2', clinicName: 'Westside Family Care Clinic' },
     ],
   },
   Wed: {
     enabled: true,
     slots: [
-      { id: 'wed_1', start: '09:00 AM', end: '01:00 PM' },
-      { id: 'wed_2', start: '02:00 PM', end: '05:00 PM' },
+      { id: 'wed_1', start: '09:00 AM', end: '01:00 PM', clinicId: 'clinic_1', clinicName: 'Downtown Medical Center' },
+      { id: 'wed_2', start: '04:00 PM', end: '08:00 PM', clinicId: 'clinic_2', clinicName: 'Westside Family Care Clinic' },
     ],
   },
   Thu: {
     enabled: true,
     slots: [
-      { id: 'thu_1', start: '09:00 AM', end: '01:00 PM' },
-      { id: 'thu_2', start: '02:00 PM', end: '05:00 PM' },
+      { id: 'thu_1', start: '09:00 AM', end: '01:00 PM', clinicId: 'clinic_1', clinicName: 'Downtown Medical Center' },
+      { id: 'thu_2', start: '04:00 PM', end: '08:00 PM', clinicId: 'clinic_2', clinicName: 'Westside Family Care Clinic' },
     ],
   },
   Fri: {
     enabled: true,
     slots: [
-      { id: 'fri_1', start: '09:00 AM', end: '01:00 PM' },
-      { id: 'fri_2', start: '02:00 PM', end: '05:00 PM' },
+      { id: 'fri_1', start: '09:00 AM', end: '01:00 PM', clinicId: 'clinic_1', clinicName: 'Downtown Medical Center' },
+      { id: 'fri_2', start: '04:00 PM', end: '08:00 PM', clinicId: 'clinic_2', clinicName: 'Westside Family Care Clinic' },
     ],
   },
   Sat: {
     enabled: false,
-    slots: [
-      { id: 'sat_1', start: '09:00 AM', end: '01:00 PM' },
-    ],
+    slots: [{ id: 'sat_1', start: '09:00 AM', end: '01:00 PM', clinicId: 'clinic_2', clinicName: 'Westside Family Care Clinic' }],
   },
   Sun: {
     enabled: false,
@@ -106,31 +110,59 @@ const createInitialSlots = () => ({
 export const AdminDoctors = () => {
   const [doctors, setDoctors] = useState([]);
   const [filteredDoctors, setFilteredDoctors] = useState([]);
+  const [clinics, setClinics] = useState([]);
+  const [specialties, setSpecialties] = useState([]);
+
+  // Filters
   const [selectedSpecialty, setSelectedSpecialty] = useState('All');
+  const [selectedClinic, setSelectedClinic] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Modals
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isNewSpecialtyModalOpen, setIsNewSpecialtyModalOpen] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
 
-  // Weekday schedule state: Each day has its own array of { id, start, end } slots
+  // Weekday schedule state: Each slot has { id, start, end, clinicId, clinicName }
   const [weekdaySchedule, setWeekdaySchedule] = useState(createInitialSlots);
 
   const [form] = Form.useForm();
+  const [specialtyQuickForm] = Form.useForm();
 
-  const loadDoctors = async () => {
-    const data = await doctorService.getAll();
-    setDoctors(data);
-    setFilteredDoctors(data);
+  const loadData = async () => {
+    const docs = await doctorService.getAll();
+    const clinList = await clinicService.getAll();
+    const specList = clinicService.getAllSpecialties();
+
+    setDoctors(docs);
+    setFilteredDoctors(docs);
+    setClinics(clinList);
+    setSpecialties(specList);
   };
 
   useEffect(() => {
-    loadDoctors();
+    loadData();
   }, []);
 
+  // Filter effect
   useEffect(() => {
     let result = doctors;
+
     if (selectedSpecialty !== 'All') {
       result = result.filter((d) => d.specialty === selectedSpecialty);
     }
+
+    if (selectedClinic !== 'All') {
+      result = result.filter((d) => {
+        const schedule = d.weekdaySchedule || {};
+        return Object.values(schedule).some(
+          (day) =>
+            day.enabled &&
+            day.slots?.some((slot) => slot.clinicId === selectedClinic)
+        );
+      });
+    }
+
     if (searchQuery) {
       result = result.filter(
         (d) =>
@@ -138,41 +170,63 @@ export const AdminDoctors = () => {
           d.specialty.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
+
     setFilteredDoctors(result);
-  }, [selectedSpecialty, searchQuery, doctors]);
+  }, [selectedSpecialty, selectedClinic, searchQuery, doctors]);
 
   // Toggle enabling/disabling a day
   const toggleDayEnabled = (dayKey, checked) => {
-    setWeekdaySchedule((prev) => ({
-      ...prev,
-      [dayKey]: {
-        ...prev[dayKey],
-        enabled: checked,
-        slots: checked && prev[dayKey].slots.length === 0
-          ? [{ id: `${dayKey}_${Date.now()}`, start: '09:00 AM', end: '01:00 PM' }]
-          : prev[dayKey].slots,
-      },
-    }));
+    setWeekdaySchedule((prev) => {
+      const defaultClinic = clinics[0] || { id: 'clinic_1', name: 'Downtown Medical Center' };
+      return {
+        ...prev,
+        [dayKey]: {
+          ...prev[dayKey],
+          enabled: checked,
+          slots:
+            checked && prev[dayKey].slots.length === 0
+              ? [
+                  {
+                    id: `${dayKey}_${Date.now()}`,
+                    start: '09:00 AM',
+                    end: '01:00 PM',
+                    clinicId: defaultClinic.id,
+                    clinicName: defaultClinic.name,
+                  },
+                ]
+              : prev[dayKey].slots,
+        },
+      };
+    });
   };
 
-  // Add a new slot to a specific day
+  // Add a new slot to a day with clinic location
   const handleAddSlotToDay = (dayKey) => {
     setWeekdaySchedule((prev) => {
       const currentSlots = prev[dayKey]?.slots || [];
       let newStart = '02:00 PM';
       let newEnd = '05:00 PM';
+      let newClinic = clinics[1] || clinics[0] || { id: 'clinic_2', name: 'Westside Family Care Clinic' };
 
       if (currentSlots.length > 0) {
         const lastSlot = currentSlots[currentSlots.length - 1];
         newStart = lastSlot.end || '02:00 PM';
         const idx = TIME_OPTIONS.indexOf(newStart);
         newEnd = idx !== -1 && idx + 6 < TIME_OPTIONS.length ? TIME_OPTIONS[idx + 6] : '06:00 PM';
+
+        // Alternate clinic for next shift if available
+        const otherClinic = clinics.find((c) => c.id !== lastSlot.clinicId);
+        if (otherClinic) {
+          newClinic = otherClinic;
+        }
       }
 
       const newSlot = {
         id: `${dayKey}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
         start: newStart,
         end: newEnd,
+        clinicId: newClinic.id,
+        clinicName: newClinic.name,
       };
 
       return {
@@ -200,27 +254,41 @@ export const AdminDoctors = () => {
     });
   };
 
-  // Update start or end time for a specific slot
-  const handleUpdateSlotTime = (dayKey, slotId, field, value) => {
+  // Update a field in a slot (start, end, clinicId)
+  const handleUpdateSlotField = (dayKey, slotId, field, value) => {
     setWeekdaySchedule((prev) => ({
       ...prev,
       [dayKey]: {
         ...prev[dayKey],
-        slots: prev[dayKey].slots.map((s) => (s.id === slotId ? { ...s, [field]: value } : s)),
+        slots: prev[dayKey].slots.map((s) => {
+          if (s.id !== slotId) return s;
+          if (field === 'clinicId') {
+            const foundClinic = clinics.find((c) => c.id === value);
+            return {
+              ...s,
+              clinicId: value,
+              clinicName: foundClinic ? foundClinic.name : s.clinicName,
+            };
+          }
+          return { ...s, [field]: value };
+        }),
       },
     }));
   };
 
-  // Quick preset: Mon - Fri
+  // Quick preset: Mon - Fri standard shifts
   const applyMonToFri = () => {
+    const c1 = clinics[0] || { id: 'clinic_1', name: 'Downtown Medical Center' };
+    const c2 = clinics[1] || clinics[0] || { id: 'clinic_2', name: 'Westside Family Care Clinic' };
+
     setWeekdaySchedule((prev) => {
       const updated = { ...prev };
       ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].forEach((d) => {
         updated[d] = {
           enabled: true,
           slots: [
-            { id: `${d}_1`, start: '09:00 AM', end: '01:00 PM' },
-            { id: `${d}_2`, start: '02:00 PM', end: '05:00 PM' },
+            { id: `${d}_1`, start: '09:00 AM', end: '01:00 PM', clinicId: c1.id, clinicName: c1.name },
+            { id: `${d}_2`, start: '04:00 PM', end: '08:00 PM', clinicId: c2.id, clinicName: c2.name },
           ],
         };
       });
@@ -229,14 +297,14 @@ export const AdminDoctors = () => {
       });
       return updated;
     });
-    message.success('Applied standard Mon-Fri schedule');
+    message.success('Applied Mon-Fri schedule with cross-clinic shifts');
   };
 
-  // Quick action: Copy Monday slots to all active days
+  // Copy Monday slots to all active days
   const copyMondaySlotsToAll = () => {
     const mondaySlots = weekdaySchedule.Mon?.slots || [];
     if (mondaySlots.length === 0) {
-      message.warning('Monday has no slots configured to copy');
+      message.warning('Monday has no configured shifts to copy');
       return;
     }
     setWeekdaySchedule((prev) => {
@@ -254,7 +322,20 @@ export const AdminDoctors = () => {
       });
       return updated;
     });
-    message.success('Replicated Monday time slots to all active weekdays');
+    message.success('Replicated Monday shifts and clinic locations to all active weekdays');
+  };
+
+  // Quick add new dynamic specialty
+  const handleQuickAddSpecialty = async (values) => {
+    const name = values.newSpecialtyName?.trim();
+    if (!name) return;
+    await clinicService.addSpecialty(name, values.clinicIds || []);
+    message.success(`Specialty "${name}" registered and available in dropdowns!`);
+    setIsNewSpecialtyModalOpen(false);
+    specialtyQuickForm.resetFields();
+    // Select this newly created specialty in the doctor form
+    form.setFieldsValue({ specialty: name });
+    loadData();
   };
 
   const handleAddDoctor = async (values) => {
@@ -263,24 +344,56 @@ export const AdminDoctors = () => {
     );
 
     if (enabledDays.length === 0) {
-      message.error('Please configure at least one active weekday with start and end time slots');
+      message.error('Please configure at least one active weekday shift with start, end time and clinic branch');
       return;
     }
 
-    // Format slots as string array e.g. "09:00 AM - 01:00 PM"
-    const formattedSchedule = {};
-    const allFormattedSlots = [];
+    const fee = Number(values.fee) || 150;
+    const clinicsVisitedMap = {};
 
     enabledDays.forEach((day) => {
-      const daySlots = weekdaySchedule[day].slots.map((s) => `${s.start} - ${s.end}`);
-      formattedSchedule[day] = {
-        enabled: true,
-        slots: daySlots,
-      };
-      allFormattedSlots.push(...daySlots);
+      weekdaySchedule[day].slots.forEach((s) => {
+        if (!clinicsVisitedMap[s.clinicId]) {
+          const found = clinics.find((c) => c.id === s.clinicId);
+          clinicsVisitedMap[s.clinicId] = {
+            clinicId: s.clinicId,
+            clinicName: s.clinicName,
+            sittingFeePerDay: found ? found.sittingCharge : 400,
+            daysWorked: 0,
+            patientsTreated: 0,
+            amountBilled: 0,
+            totalSittingFee: 0,
+            netPayout: 0,
+          };
+        }
+        clinicsVisitedMap[s.clinicId].daysWorked += 2; // initial estimate
+      });
     });
 
-    const uniqueSlots = Array.from(new Set(allFormattedSlots));
+    const clinicsBreakdown = Object.values(clinicsVisitedMap).map((cb) => {
+      const estimatedPatients = cb.daysWorked * 4;
+      const billed = estimatedPatients * fee;
+      const sitting = cb.daysWorked * cb.sittingFeePerDay;
+      return {
+        ...cb,
+        patientsTreated: estimatedPatients,
+        amountBilled: billed,
+        totalSittingFee: sitting,
+        netPayout: billed - sitting,
+      };
+    });
+
+    const totalPatients = clinicsBreakdown.reduce((sum, c) => sum + c.patientsTreated, 0);
+    const totalBilled = clinicsBreakdown.reduce((sum, c) => sum + c.amountBilled, 0);
+    const totalSitting = clinicsBreakdown.reduce((sum, c) => sum + c.totalSittingFee, 0);
+
+    const summarySlots = [];
+    enabledDays.forEach((d) => {
+      weekdaySchedule[d].slots.forEach((s) => {
+        const shortName = s.clinicName.split(' ')[0];
+        summarySlots.push(`${s.start} - ${s.end} @ ${shortName}`);
+      });
+    });
 
     try {
       await doctorService.addDoctor({
@@ -288,20 +401,29 @@ export const AdminDoctors = () => {
         specialty: values.specialty,
         title: values.title || 'Consultant Specialist',
         experience: `${values.experience || 5} years`,
-        fee: Number(values.fee) || 120,
+        fee,
         department: `${values.specialty} Department`,
         education: values.education || 'Top Medical University',
         phone: values.phone || '+1 (555) 000-0000',
         email: values.email || 'doctor@vibemed.health',
         availability: enabledDays,
-        timeSlots: uniqueSlots,
-        weekdaySchedule: formattedSchedule,
+        timeSlots: Array.from(new Set(summarySlots)),
+        weekdaySchedule,
+        monthlyStats: {
+          month: 'September 2026',
+          totalPatientsTreated: totalPatients,
+          grossBilled: totalBilled,
+          totalSittingCharges: totalSitting,
+          netDoctorPayout: totalBilled - totalSitting,
+          clinicsBreakdown,
+        },
       });
-      message.success('Doctor registered with custom weekday time slots!');
+
+      message.success('Doctor registered with multi-clinic shifts and revenue tracking!');
       setIsAddModalOpen(false);
       form.resetFields();
       setWeekdaySchedule(createInitialSlots());
-      loadDoctors();
+      loadData();
     } catch {
       message.error('Failed to add doctor');
     }
@@ -314,7 +436,7 @@ export const AdminDoctors = () => {
       if (selectedDoctor?.id === id) {
         setSelectedDoctor(null);
       }
-      loadDoctors();
+      loadData();
     } catch {
       message.error('Failed to delete doctor');
     }
@@ -323,9 +445,17 @@ export const AdminDoctors = () => {
   return (
     <div>
       <PageHeader
-        title="Doctor & Specialist Roster"
-        subtitle="Manage hospital physicians, weekly availability, consultation time slots, and credentials"
+        title="Physician Directory & Cross-Clinic Shifts"
+        subtitle="Manage hospital specialists, multi-location shift schedules, daily sitting charges, and patient billing"
         extra={[
+          <Button
+            key="addSpecialty"
+            icon={<AppstoreOutlined />}
+            onClick={() => setIsNewSpecialtyModalOpen(true)}
+            style={{ borderRadius: 8 }}
+          >
+            + Add Specialty
+          </Button>,
           <Button
             key="add"
             type="primary"
@@ -338,10 +468,10 @@ export const AdminDoctors = () => {
         ]}
       />
 
-      {/* Filter Bar */}
+      {/* Filter Bar with Specialty AND Clinic Location filters */}
       <Card style={{ marginBottom: 20, borderRadius: 16, border: '1px solid #e2e8f0' }}>
         <Row gutter={[12, 12]} align="middle">
-          <Col xs={24} sm={14} md={12}>
+          <Col xs={24} md={10}>
             <Input
               prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
               placeholder="Search doctors by name or specialty..."
@@ -351,16 +481,32 @@ export const AdminDoctors = () => {
               allowClear
             />
           </Col>
-          <Col xs={24} sm={10} md={12}>
+          <Col xs={24} sm={12} md={7}>
             <Select
               value={selectedSpecialty}
               onChange={(val) => setSelectedSpecialty(val)}
               style={{ width: '100%' }}
               size="large"
             >
-              {doctorService.getSpecialties().map((spec) => (
+              <Option value="All">All Medical Specialties ({specialties.length})</Option>
+              {specialties.map((spec) => (
                 <Option key={spec} value={spec}>
-                  {spec === 'All' ? 'All Specialties' : spec}
+                  {spec}
+                </Option>
+              ))}
+            </Select>
+          </Col>
+          <Col xs={24} sm={12} md={7}>
+            <Select
+              value={selectedClinic}
+              onChange={(val) => setSelectedClinic(val)}
+              style={{ width: '100%' }}
+              size="large"
+            >
+              <Option value="All">All Clinic Locations ({clinics.length})</Option>
+              {clinics.map((c) => (
+                <Option key={c.id} value={c.id}>
+                  {c.name}
                 </Option>
               ))}
             </Select>
@@ -370,123 +516,178 @@ export const AdminDoctors = () => {
 
       {/* Doctor Grid */}
       <Row gutter={[16, 16]}>
-        {filteredDoctors.map((doc) => (
-          <Col xs={24} sm={12} lg={8} key={doc.id}>
-            <Card
-              hoverable
-              style={{ borderRadius: 16, border: '1px solid #e2e8f0', height: '100%', display: 'flex', flexDirection: 'column' }}
-              styles={{ body: { padding: 18, flex: 1, display: 'flex', flexDirection: 'column' } }}
-            >
-              <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-                <Avatar size={58} src={doc.avatar} style={{ border: '2px solid #0d9488', flexShrink: 0 }} />
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <Title level={5} style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {doc.name}
-                  </Title>
-                  <Tag color="geekblue" style={{ marginTop: 4 }}>
-                    {doc.specialty}
-                  </Tag>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
-                    <StarFilled style={{ color: '#f59e0b', fontSize: 12 }} />
-                    <Text strong style={{ fontSize: 12 }}>
-                      {doc.rating}
-                    </Text>
-                    <Text type="secondary" style={{ fontSize: 11 }}>
-                      ({doc.reviewsCount} reviews)
-                    </Text>
-                  </div>
-                </div>
-              </div>
+        {filteredDoctors.map((doc) => {
+          const stats = doc.monthlyStats || {};
+          const clinicsPracticed = stats.clinicsBreakdown || [];
 
-              <div style={{ marginTop: 14, fontSize: 13, color: '#64748b', display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
-                <div>🏥 {doc.department}</div>
-                <div>💼 {doc.experience} Experience</div>
-                <div>💵 <strong style={{ color: '#0d9488' }}>${doc.fee}</strong> Consultation Fee</div>
-
-                {/* Available Days */}
-                <div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: '#334155', marginBottom: 2 }}>
-                    <CalendarOutlined style={{ marginRight: 4, color: '#0d9488' }} />
-                    Available Days:
-                  </div>
-                  <Space size={3} wrap>
-                    {doc.availability?.map((day) => (
-                      <Tag key={day} color="cyan" style={{ fontSize: 11, marginInlineEnd: 3, padding: '0 5px' }}>
-                        {day}
-                      </Tag>
-                    ))}
-                  </Space>
-                </div>
-
-                {/* Available Time Slots */}
-                <div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: '#334155', marginBottom: 2 }}>
-                    <ClockCircleOutlined style={{ marginRight: 4, color: '#0284c7' }} />
-                    Time Slots:
-                  </div>
-                  <Space size={3} wrap>
-                    {(doc.timeSlots || ['09:00 AM - 12:00 PM', '02:00 PM - 05:00 PM']).map((slot) => (
-                      <Tag key={slot} color="blue" style={{ fontSize: 11, marginInlineEnd: 3, padding: '1px 6px' }}>
-                        {slot}
-                      </Tag>
-                    ))}
-                  </Space>
-                </div>
-              </div>
-
-              <div
+          return (
+            <Col xs={24} sm={12} lg={8} key={doc.id}>
+              <Card
+                hoverable
                 style={{
-                  marginTop: 16,
-                  paddingTop: 12,
-                  borderTop: '1px solid #f1f5f9',
+                  borderRadius: 16,
+                  border: '1.5px solid #e2e8f0',
+                  height: '100%',
                   display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
+                  flexDirection: 'column',
                 }}
+                styles={{ body: { padding: 18, flex: 1, display: 'flex', flexDirection: 'column' } }}
               >
-                <Tag color={doc.status === 'Available' ? 'green' : 'gold'}>{doc.status}</Tag>
+                {/* Doctor Header */}
+                <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+                  <Avatar size={58} src={doc.avatar} style={{ border: '2px solid #0d9488', flexShrink: 0 }} />
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <Title level={5} style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {doc.name}
+                    </Title>
+                    <Tag color="geekblue" style={{ marginTop: 4 }}>
+                      {doc.specialty}
+                    </Tag>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                      <StarFilled style={{ color: '#f59e0b', fontSize: 12 }} />
+                      <Text strong style={{ fontSize: 12 }}>
+                        {doc.rating}
+                      </Text>
+                      <Text type="secondary" style={{ fontSize: 11 }}>
+                        ({doc.reviewsCount} reviews)
+                      </Text>
+                    </div>
+                  </div>
+                </div>
 
-                <Space size="small">
-                  <Button
-                    size="small"
-                    icon={<EyeOutlined />}
-                    onClick={() => setSelectedDoctor(doc)}
-                  >
-                    View
-                  </Button>
+                <div style={{ marginTop: 14, fontSize: 13, color: '#64748b', display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+                  <div>💼 {doc.experience} Experience • 💵 <strong style={{ color: '#0d9488' }}>${doc.fee}</strong> / visit</div>
 
-                  <Popconfirm
-                    title="Delete Doctor Profile"
-                    description={`Are you sure you want to remove ${doc.name}?`}
-                    onConfirm={() => handleDeleteDoctor(doc.id)}
-                    okText="Yes, Delete"
-                    cancelText="Cancel"
-                    okButtonProps={{ danger: true }}
+                  {/* Practicing Clinics Badges */}
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 2 }}>
+                      <ShopOutlined style={{ marginRight: 4, color: '#0d9488' }} />
+                      Practicing Clinic Locations:
+                    </div>
+                    <Space size={3} wrap>
+                      {clinicsPracticed.length > 0 ? (
+                        clinicsPracticed.map((cb) => (
+                          <Tag key={cb.clinicId} color="purple" style={{ fontSize: 10, margin: 0, padding: '1px 5px' }}>
+                            {cb.clinicName.split(' ')[0]} ({cb.daysWorked}d)
+                          </Tag>
+                        ))
+                      ) : (
+                        <Tag color="default" style={{ fontSize: 10 }}>Downtown Clinic</Tag>
+                      )}
+                    </Space>
+                  </div>
+
+                  {/* Multi-Clinic Shift Timing Summary */}
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 2 }}>
+                      <ClockCircleOutlined style={{ marginRight: 4, color: '#0284c7' }} />
+                      Shift Timings & Locations:
+                    </div>
+                    <Space size={3} wrap>
+                      {(doc.timeSlots || []).map((slot) => (
+                        <Tag key={slot} color="blue" style={{ fontSize: 10, marginInlineEnd: 3, padding: '1px 5px' }}>
+                          {slot}
+                        </Tag>
+                      ))}
+                    </Space>
+                  </div>
+
+                  {/* 1-Month Billing & Sitting Charges Performance Card */}
+                  <div
+                    style={{
+                      marginTop: 8,
+                      background: 'linear-gradient(135deg, #f0fdfa 0%, #f8fafc 100%)',
+                      border: '1px solid #ccfbf1',
+                      borderRadius: 10,
+                      padding: '8px 10px',
+                    }}
                   >
-                    <Tooltip title="Delete Profile">
-                      <Button size="small" danger icon={<DeleteOutlined />} />
-                    </Tooltip>
-                  </Popconfirm>
-                </Space>
-              </div>
-            </Card>
-          </Col>
-        ))}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 2 }}>
+                      <span style={{ color: '#475569' }}>👥 Treated this month:</span>
+                      <strong>{stats.totalPatientsTreated || 0} Patients</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 2 }}>
+                      <span style={{ color: '#475569' }}>💵 Gross Patient Billing:</span>
+                      <strong style={{ color: '#0d9488' }}>${(stats.grossBilled || 0).toLocaleString()}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 2 }}>
+                      <span style={{ color: '#475569' }}>🏥 Clinic Sitting Fees:</span>
+                      <span style={{ color: '#dc2626', fontWeight: 600 }}>-${(stats.totalSittingCharges || 0).toLocaleString()}</span>
+                    </div>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        fontSize: 12,
+                        paddingTop: 4,
+                        borderTop: '1px dashed #cbd5e1',
+                      }}
+                    >
+                      <span style={{ fontWeight: 700, color: '#0f766e' }}>Net Doctor Payout:</span>
+                      <span style={{ fontWeight: 800, color: '#0f766e' }}>
+                        ${(stats.netDoctorPayout || 0).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card Footer */}
+                <div
+                  style={{
+                    marginTop: 14,
+                    paddingTop: 10,
+                    borderTop: '1px solid #f1f5f9',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Tag color={doc.status === 'Available' ? 'green' : 'gold'}>{doc.status}</Tag>
+
+                  <Space size="small">
+                    <Button
+                      size="small"
+                      icon={<EyeOutlined />}
+                      onClick={() => setSelectedDoctor(doc)}
+                    >
+                      View Chart
+                    </Button>
+
+                    <Popconfirm
+                      title="Delete Doctor Profile"
+                      description={`Are you sure you want to remove ${doc.name}?`}
+                      onConfirm={() => handleDeleteDoctor(doc.id)}
+                      okText="Yes, Delete"
+                      cancelText="Cancel"
+                      okButtonProps={{ danger: true }}
+                    >
+                      <Tooltip title="Delete Profile">
+                        <Button size="small" danger icon={<DeleteOutlined />} />
+                      </Tooltip>
+                    </Popconfirm>
+                  </Space>
+                </div>
+              </Card>
+            </Col>
+          );
+        })}
       </Row>
 
-      {/* Add Doctor Modal */}
+      {/* ========================================================
+          ADD DOCTOR MODAL WITH MULTI-LOCATION CROSS-CLINIC SHIFTS
+         ======================================================== */}
       <Modal
         title={
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <MedicineBoxOutlined style={{ color: '#0d9488', fontSize: 22 }} />
-            <span style={{ fontSize: 18, fontWeight: 700 }}>Add New Doctor & Weekday Schedule</span>
+            <span style={{ fontSize: 18, fontWeight: 700 }}>Add New Doctor & Multi-Clinic Schedule</span>
           </div>
         }
         open={isAddModalOpen}
         onCancel={() => setIsAddModalOpen(false)}
         footer={null}
         width="100%"
-        style={{ maxWidth: 800 }}
+        style={{ maxWidth: 860 }}
       >
         <Form
           form={form}
@@ -505,14 +706,27 @@ export const AdminDoctors = () => {
               </Form.Item>
             </Col>
             <Col xs={24} sm={10}>
-              <Form.Item name="specialty" label="Medical Specialty" rules={[{ required: true, message: 'Please select specialty' }]}>
+              <Form.Item
+                name="specialty"
+                label={
+                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                    <span>Medical Specialty</span>
+                    <a
+                      onClick={() => setIsNewSpecialtyModalOpen(true)}
+                      style={{ fontSize: 11, fontWeight: 600, color: '#0d9488' }}
+                    >
+                      + Add New
+                    </a>
+                  </div>
+                }
+                rules={[{ required: true, message: 'Please select specialty' }]}
+              >
                 <Select placeholder="Select specialty">
-                  <Option value="Cardiology">Cardiology</Option>
-                  <Option value="Neurology">Neurology</Option>
-                  <Option value="Pediatrics">Pediatrics</Option>
-                  <Option value="Orthopedics">Orthopedics</Option>
-                  <Option value="Dermatology">Dermatology</Option>
-                  <Option value="General Medicine">General Medicine</Option>
+                  {specialties.map((spec) => (
+                    <Option key={spec} value={spec}>
+                      {spec}
+                    </Option>
+                  ))}
                 </Select>
               </Form.Item>
             </Col>
@@ -525,7 +739,7 @@ export const AdminDoctors = () => {
               </Form.Item>
             </Col>
             <Col xs={24} sm={12}>
-              <Form.Item name="fee" label="Consultation Fee ($)" rules={[{ required: true }]}>
+              <Form.Item name="fee" label="Patient Consultation Fee ($)" rules={[{ required: true }]}>
                 <Input placeholder="150" type="number" prefix="$" />
               </Form.Item>
             </Col>
@@ -545,7 +759,7 @@ export const AdminDoctors = () => {
           </Row>
 
           {/* ========================================================
-              WEEKDAY BOX: START TIME & END TIME SELECTBOXES WITH "+ ADD SLOT"
+              WEEKDAY BOX: START & END TIME + CLINIC LOCATION PER SHIFT
              ======================================================== */}
           <div
             style={{
@@ -553,11 +767,11 @@ export const AdminDoctors = () => {
               border: '1.5px solid #cbd5e1',
               borderRadius: 14,
               padding: '16px',
-              marginTop: 8,
+              marginTop: 6,
               marginBottom: 20,
             }}
           >
-            {/* Box Header & Batch Actions */}
+            {/* Header with Quick Presets */}
             <div
               style={{
                 display: 'flex',
@@ -574,18 +788,17 @@ export const AdminDoctors = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <CalendarOutlined style={{ color: '#0d9488', fontSize: 16 }} />
                   <span style={{ fontWeight: 700, fontSize: 15, color: '#0f172a' }}>
-                    Weekday Time Slots (Start Time & End Time Selectboxes)
+                    Multi-Clinic Weekday Shift Timings
                   </span>
                 </div>
                 <Text type="secondary" style={{ fontSize: 12 }}>
-                  Set start & end time for each slot. Click "+ Add Slot" to add multiple consultation slots in a day.
+                  Set Shift Start Time, End Time & select which Clinic Branch the doctor sits in.
                 </Text>
               </div>
 
-              {/* Quick Preset Buttons */}
               <Space size={6} wrap>
                 <Button size="small" onClick={applyMonToFri} style={{ fontSize: 12, borderRadius: 6 }}>
-                  Mon - Fri Standard
+                  Mon - Fri (2 Shifts)
                 </Button>
                 <Button
                   size="small"
@@ -593,12 +806,12 @@ export const AdminDoctors = () => {
                   onClick={copyMondaySlotsToAll}
                   style={{ fontSize: 12, borderRadius: 6, color: '#0d9488', borderColor: '#0d9488' }}
                 >
-                  Copy Mon Slots to All
+                  Copy Mon Shifts to All
                 </Button>
               </Space>
             </div>
 
-            {/* List of 7 Weekdays */}
+            {/* Weekdays List */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {WEEKDAY_CONFIG.map(({ key, label }) => {
                 const dayData = weekdaySchedule[key] || { enabled: false, slots: [] };
@@ -639,7 +852,7 @@ export const AdminDoctors = () => {
                         {isEnabled ? (
                           <Tag color="cyan" style={{ margin: 0, fontWeight: 600, fontSize: 11 }}>
                             <ClockCircleOutlined style={{ marginRight: 4 }} />
-                            {dayData.slots.length} {dayData.slots.length === 1 ? 'Slot' : 'Slots'} Configured
+                            {dayData.slots.length} {dayData.slots.length === 1 ? 'Shift' : 'Shifts'} Scheduled
                           </Tag>
                         ) : (
                           <Tag color="default" style={{ margin: 0, color: '#94a3b8', fontSize: 11 }}>
@@ -648,7 +861,7 @@ export const AdminDoctors = () => {
                         )}
                       </div>
 
-                      {/* Add Slot Button for this specific day */}
+                      {/* Add Shift Button */}
                       <Button
                         size="small"
                         type={isEnabled ? 'dashed' : 'default'}
@@ -662,16 +875,16 @@ export const AdminDoctors = () => {
                           fontWeight: 600,
                         }}
                       >
-                        + Add Slot
+                        + Add Shift / Clinic
                       </Button>
                     </div>
 
-                    {/* Time Slot Rows with Start & End Time Selectboxes */}
+                    {/* Shifts with Start Time, End Time & Clinic Branch Selection */}
                     {isEnabled && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
                         {dayData.slots.length === 0 ? (
                           <div style={{ padding: '8px 12px', background: '#fef3c7', borderRadius: 8, fontSize: 12, color: '#b45309' }}>
-                            No slots configured for this day. Click "+ Add Slot" above to set consultation hours.
+                            No shifts configured for this day. Click "+ Add Shift / Clinic" above.
                           </div>
                         ) : (
                           dayData.slots.map((slot, index) => (
@@ -688,38 +901,54 @@ export const AdminDoctors = () => {
                                 border: '1px solid #ccfbf1',
                               }}
                             >
-                              <span style={{ fontSize: 12, fontWeight: 700, color: '#0f766e', minWidth: 48 }}>
-                                Slot {index + 1}:
+                              <span style={{ fontSize: 12, fontWeight: 700, color: '#0f766e', minWidth: 50 }}>
+                                Shift {index + 1}:
                               </span>
 
-                              {/* Start Time Selectbox */}
+                              {/* Start Time */}
                               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                <Text type="secondary" style={{ fontSize: 11 }}>Start Time:</Text>
+                                <Text type="secondary" style={{ fontSize: 11 }}>From:</Text>
                                 <Select
                                   size="small"
                                   value={slot.start}
-                                  onChange={(val) => handleUpdateSlotTime(key, slot.id, 'start', val)}
-                                  style={{ width: 115 }}
+                                  onChange={(val) => handleUpdateSlotField(key, slot.id, 'start', val)}
+                                  style={{ width: 110 }}
                                   options={TIME_OPTIONS.map((t) => ({ label: t, value: t }))}
                                 />
                               </div>
 
                               <span style={{ color: '#0d9488', fontSize: 12, fontWeight: 700 }}>to</span>
 
-                              {/* End Time Selectbox */}
+                              {/* End Time */}
                               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                <Text type="secondary" style={{ fontSize: 11 }}>End Time:</Text>
+                                <Text type="secondary" style={{ fontSize: 11 }}>To:</Text>
                                 <Select
                                   size="small"
                                   value={slot.end}
-                                  onChange={(val) => handleUpdateSlotTime(key, slot.id, 'end', val)}
-                                  style={{ width: 115 }}
+                                  onChange={(val) => handleUpdateSlotField(key, slot.id, 'end', val)}
+                                  style={{ width: 110 }}
                                   options={TIME_OPTIONS.map((t) => ({ label: t, value: t }))}
                                 />
                               </div>
 
-                              {/* Remove Slot Button */}
-                              <Tooltip title="Delete this slot">
+                              {/* Clinic Location Selectbox */}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <ShopOutlined style={{ color: '#0d9488' }} />
+                                <Text type="secondary" style={{ fontSize: 11 }}>At Clinic:</Text>
+                                <Select
+                                  size="small"
+                                  value={slot.clinicId}
+                                  onChange={(val) => handleUpdateSlotField(key, slot.id, 'clinicId', val)}
+                                  style={{ width: 220 }}
+                                  options={clinics.map((c) => ({
+                                    label: `${c.name} ($${c.sittingCharge}/d)`,
+                                    value: c.id,
+                                  }))}
+                                />
+                              </div>
+
+                              {/* Remove Shift */}
+                              <Tooltip title="Delete this shift">
                                 <Button
                                   type="text"
                                   danger
@@ -754,6 +983,49 @@ export const AdminDoctors = () => {
         </Form>
       </Modal>
 
+      {/* Quick Add Specialty Modal */}
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <AppstoreOutlined style={{ color: '#0d9488', fontSize: 18 }} />
+            <span>Add New Medical Specialty</span>
+          </div>
+        }
+        open={isNewSpecialtyModalOpen}
+        onCancel={() => setIsNewSpecialtyModalOpen(false)}
+        footer={null}
+        width="100%"
+        style={{ maxWidth: 500 }}
+      >
+        <Form form={specialtyQuickForm} layout="vertical" onFinish={handleQuickAddSpecialty} style={{ paddingTop: 10 }}>
+          <Form.Item
+            name="newSpecialtyName"
+            label="Specialty Name"
+            rules={[{ required: true, message: 'Please enter specialty name' }]}
+          >
+            <Input placeholder="e.g. Gynecology & Obstetrics, Oncology, Urology" />
+          </Form.Item>
+
+          <Form.Item name="clinicIds" label="Associate with Clinics (Optional)">
+            <Select
+              mode="multiple"
+              placeholder="Select clinics offering this specialty"
+              options={clinics.map((c) => ({ label: c.name, value: c.id }))}
+            />
+          </Form.Item>
+
+          <Button
+            type="primary"
+            htmlType="submit"
+            block
+            style={{ backgroundColor: '#0d9488', borderRadius: 8, marginTop: 10 }}
+          >
+            Save Specialty
+          </Button>
+        </Form>
+      </Modal>
+
+      {/* Doctor Details Modal */}
       <DoctorDetailsModal
         open={!!selectedDoctor}
         onCancel={() => setSelectedDoctor(null)}

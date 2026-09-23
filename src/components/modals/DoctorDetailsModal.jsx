@@ -1,18 +1,41 @@
 import React from 'react';
-import { Modal, Avatar, Typography, Tag, Rate, Space, Divider, Descriptions, Button, Popconfirm } from 'antd';
-import { MedicineBoxOutlined, CalendarOutlined, DeleteOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import {
+  Modal,
+  Avatar,
+  Typography,
+  Tag,
+  Rate,
+  Space,
+  Divider,
+  Descriptions,
+  Button,
+  Popconfirm,
+  Table,
+} from 'antd';
+import {
+  MedicineBoxOutlined,
+  CalendarOutlined,
+  DeleteOutlined,
+  ClockCircleOutlined,
+  ShopOutlined,
+  DollarOutlined,
+  TeamOutlined,
+} from '@ant-design/icons';
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 
 export const DoctorDetailsModal = ({ open, onCancel, doctor, onBook, onDelete }) => {
   if (!doctor) return null;
+
+  const stats = doctor.monthlyStats || {};
+  const clinicsBreakdown = stats.clinicsBreakdown || [];
 
   return (
     <Modal
       open={open}
       onCancel={onCancel}
       width="100%"
-      style={{ maxWidth: 620 }}
+      style={{ maxWidth: 740 }}
       footer={[
         onDelete && (
           <Popconfirm
@@ -70,61 +93,150 @@ export const DoctorDetailsModal = ({ open, onCancel, doctor, onBook, onDelete })
         </div>
       </div>
 
-      <Divider style={{ margin: '16px 0' }} />
+      <Divider style={{ margin: '16px 0 12px' }} />
 
-      <Descriptions size="small" column={1} bordered>
-        <Descriptions.Item label="Specialty">
-          <Tag color="geekblue">{doctor.specialty}</Tag>
-        </Descriptions.Item>
-        <Descriptions.Item label="Department">{doctor.department}</Descriptions.Item>
-        <Descriptions.Item label="Experience">{doctor.experience}</Descriptions.Item>
-        <Descriptions.Item label="Education / Medical School">{doctor.education}</Descriptions.Item>
-        <Descriptions.Item label="Consultation Fee">
-          <strong style={{ color: '#0d9488', fontSize: 15 }}>${doctor.fee} / visit</strong>
-        </Descriptions.Item>
-        <Descriptions.Item label="Available Schedule (Days)">
-          <Space size={4} wrap>
-            {doctor.availability?.map((day) => (
-              <Tag key={day} color="cyan">{day}</Tag>
-            ))}
-          </Space>
-        </Descriptions.Item>
-        {doctor.weekdaySchedule ? (
-          <Descriptions.Item label="Weekday Time Slots Schedule">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '4px 0' }}>
-              {Object.entries(doctor.weekdaySchedule).map(([day, data]) => (
-                <div key={day} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12 }}>
-                  <span style={{ fontWeight: 700, width: 40, color: '#334155' }}>{day}:</span>
-                  {data?.enabled && data?.slots?.length > 0 ? (
-                    <Space size={3} wrap>
-                      {data.slots.map((slot) => (
-                        <Tag key={slot} color="blue" icon={<ClockCircleOutlined />} style={{ fontSize: 10, margin: 0 }}>
-                          {slot}
-                        </Tag>
-                      ))}
-                    </Space>
-                  ) : (
-                    <Tag color="default" style={{ fontSize: 10, margin: 0, color: '#94a3b8' }}>
-                      Off / Not Available
-                    </Tag>
-                  )}
+      {/* Monthly Financial Performance Card */}
+      <div
+        style={{
+          background: 'linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%)',
+          border: '1.5px solid #ccfbf1',
+          borderRadius: 12,
+          padding: '14px 16px',
+          marginBottom: 16,
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <DollarOutlined style={{ color: '#0d9488', fontSize: 16 }} />
+            <strong style={{ color: '#0f766e', fontSize: 14 }}>
+              Monthly Billing & Sitting Charges ({stats.month || 'Current Month'})
+            </strong>
+          </div>
+          <Tag color="cyan">
+            <TeamOutlined style={{ marginRight: 4 }} />
+            {stats.totalPatientsTreated || 0} Patients Seen
+          </Tag>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, textAlign: 'center' }}>
+          <div style={{ background: '#ffffff', padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+            <div style={{ fontSize: 11, color: '#64748b' }}>Gross Patient Billing</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#0d9488' }}>
+              ${(stats.grossBilled || 0).toLocaleString()}
+            </div>
+          </div>
+          <div style={{ background: '#ffffff', padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+            <div style={{ fontSize: 11, color: '#64748b' }}>Clinic Sitting Fees</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#dc2626' }}>
+              -${(stats.totalSittingCharges || 0).toLocaleString()}
+            </div>
+          </div>
+          <div style={{ background: '#ffffff', padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+            <div style={{ fontSize: 11, color: '#64748b' }}>Net Doctor Payout</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#0369a1' }}>
+              ${(stats.netDoctorPayout || 0).toLocaleString()}
+            </div>
+          </div>
+        </div>
+
+        {/* Per-Clinic Breakdown List */}
+        {clinicsBreakdown.length > 0 && (
+          <div style={{ marginTop: 10, paddingTop: 8, borderTop: '1px dashed #cbd5e1' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#334155', marginBottom: 4 }}>
+              Billing Breakdown by Clinic Location:
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {clinicsBreakdown.map((cb) => (
+                <div
+                  key={cb.clinicId}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    fontSize: 11,
+                    background: '#ffffff',
+                    padding: '4px 8px',
+                    borderRadius: 6,
+                  }}
+                >
+                  <span>
+                    <ShopOutlined style={{ marginRight: 4, color: '#0d9488' }} />
+                    <strong>{cb.clinicName}</strong> ({cb.daysWorked} days):
+                  </span>
+                  <span>
+                    {cb.patientsTreated} patients • Billed: <strong>${cb.amountBilled.toLocaleString()}</strong> •
+                    Sitting Fee: <span style={{ color: '#dc2626' }}>-${cb.totalSittingFee.toLocaleString()}</span> •
+                    Net: <strong style={{ color: '#0d9488' }}>${cb.netPayout.toLocaleString()}</strong>
+                  </span>
                 </div>
               ))}
             </div>
-          </Descriptions.Item>
-        ) : (
-          <Descriptions.Item label="Consultation Time Slots">
+          </div>
+        )}
+      </div>
+
+      <Descriptions size="small" column={1} bordered>
+        <Descriptions.Item label="Medical Specialty">
+          <Tag color="geekblue">{doctor.specialty}</Tag>
+        </Descriptions.Item>
+        <Descriptions.Item label="Clinical Department">{doctor.department}</Descriptions.Item>
+        <Descriptions.Item label="Experience">{doctor.experience}</Descriptions.Item>
+        <Descriptions.Item label="Consultation Fee">
+          <strong style={{ color: '#0d9488', fontSize: 15 }}>${doctor.fee} / consultation</strong>
+        </Descriptions.Item>
+
+        {/* Multi-Clinic Shift Timetable */}
+        <Descriptions.Item label="Multi-Clinic Weekly Timetable">
+          {doctor.weekdaySchedule ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '4px 0' }}>
+              {Object.entries(doctor.weekdaySchedule).map(([day, data]) => {
+                const isEnabled = data?.enabled && data?.slots?.length > 0;
+
+                return (
+                  <div key={day} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12 }}>
+                    <span style={{ fontWeight: 700, width: 40, color: '#334155', marginTop: 2 }}>{day}:</span>
+                    {isEnabled ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        {data.slots.map((slot, idx) => {
+                          const slotText =
+                            typeof slot === 'string'
+                              ? slot
+                              : `${slot.start} - ${slot.end} @ ${slot.clinicName || 'Downtown Clinic'}`;
+
+                          return (
+                            <Tag
+                              key={idx}
+                              color="blue"
+                              icon={<ClockCircleOutlined />}
+                              style={{ fontSize: 11, margin: 0, padding: '2px 8px' }}
+                            >
+                              {slotText}
+                            </Tag>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <Tag color="default" style={{ fontSize: 10, margin: 0, color: '#94a3b8' }}>
+                        Day Off
+                      </Tag>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
             <Space size={4} wrap>
-              {(doctor.timeSlots || ['09:00 AM - 12:00 PM', '02:00 PM - 05:00 PM']).map((slot) => (
+              {(doctor.timeSlots || []).map((slot) => (
                 <Tag key={slot} color="blue" icon={<ClockCircleOutlined />}>
                   {slot}
                 </Tag>
               ))}
             </Space>
-          </Descriptions.Item>
-        )}
+          )}
+        </Descriptions.Item>
+
         <Descriptions.Item label="Contact Email">{doctor.email}</Descriptions.Item>
         <Descriptions.Item label="Contact Phone">{doctor.phone}</Descriptions.Item>
+        <Descriptions.Item label="Education / School">{doctor.education}</Descriptions.Item>
       </Descriptions>
     </Modal>
   );

@@ -11,6 +11,8 @@ import {
   HistoryOutlined,
   TeamOutlined,
   UnorderedListOutlined,
+  ShopOutlined,
+  DollarCircleOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -29,9 +31,19 @@ export const Sidebar = ({ mobileOpen, onClose }) => {
             label: 'Dashboard',
           },
           {
+            key: '/admin/clinics',
+            icon: <ShopOutlined />,
+            label: 'Clinics & Branches',
+          },
+          {
             key: '/admin/doctors',
             icon: <MedicineBoxOutlined />,
-            label: 'Doctors',
+            label: 'Doctors Roster',
+          },
+          {
+            key: '/admin/revenue',
+            icon: <DollarCircleOutlined />,
+            label: 'Revenue & Billing',
           },
           {
             key: '/admin/patients',
