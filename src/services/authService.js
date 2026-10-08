@@ -1,6 +1,19 @@
 // VibeMed Authentication Service with Live Backend API & localStorage Persistence
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api/v1";
+const resolveApiBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    const isVercel = host.includes("vercel.app");
+    const isLocalhost = host === "localhost" || host === "127.0.0.1";
+    if (!isVercel && !isLocalhost) {
+      return "https://vibemed.just4madam.com/api/v1";
+    }
+  }
+  return envUrl || "/api/v1";
+};
+
+const BASE_URL = resolveApiBaseUrl();
 const TENANT = import.meta.env.VITE_API_TENANT || "demo.just4madam.com";
 const STORAGE_KEY = "vibemed_auth_session";
 const TOKEN_KEY = "vibemed_token";
@@ -72,16 +85,41 @@ export const authService = {
       try {
         data = text ? JSON.parse(text) : null;
       } catch (jsonErr) {
-        console.warn("Failed to parse login response JSON:", jsonErr, text);
+        console.warn(
+          "Failed to parse login response JSON:",
+          jsonErr,
+          text?.substring(0, 100),
+        );
+      }
+
+      // If server returned 200 OK with HTML (e.g. Hostinger rewriting /api/v1 to index.html), or non-2xx
+      const isHtmlResponse = text && text.trim().startsWith("<");
+      if (isHtmlResponse) {
+        console.warn(
+          "Received HTML instead of JSON from API endpoint. Check that API URL points to the backend server rather than static host.",
+        );
+        return authService.mockLogin({ email, role });
       }
 
       if (!response.ok || !data || !data.success) {
         if (response.status === 429) {
-          console.warn("API rate limit exceeded (429). Falling back to demo session if available.");
+          console.warn(
+            "API rate limit exceeded (429). Falling back to demo session if available.",
+          );
           return authService.mockLogin({ email, role });
         }
 
-        let errorMsg = data?.message || `Login failed with status ${response.status}`;
+        let errorMsg = data?.message;
+        if (!errorMsg) {
+          if (response.status === 200) {
+            errorMsg =
+              "Login response was invalid. Falling back to demo account.";
+            return authService.mockLogin({ email, role });
+          } else {
+            errorMsg = `Login failed with status ${response.status}`;
+          }
+        }
+
         if (data?.errors) {
           const firstErr = Object.values(data.errors).flat()[0];
           if (firstErr) errorMsg = firstErr;

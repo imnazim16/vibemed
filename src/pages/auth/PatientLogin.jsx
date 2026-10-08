@@ -141,8 +141,8 @@ export const PatientLogin = () => {
             form={form}
             layout="vertical"
             initialValues={{
-              email: 'alex.morgan@vibemed.health',
-              password: 'Password123!',
+              email: 'patient@demo-medical-center.test',
+              password: 'password',
               remember: true,
             }}
             onFinish={handleFinish}

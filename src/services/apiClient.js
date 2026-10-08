@@ -11,7 +11,25 @@
 
 import { authService } from './authService';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+// Smart Base URL resolution:
+// - On Vercel or local Vite dev server, '/api/v1' is proxied by the edge/server.
+// - On Hostinger or any static domain, relative '/api/v1' would hit the static files (returning index.html).
+//   Therefore, on non-Vercel and non-localhost hosts, we directly call the live backend API.
+const resolveApiBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    const isVercel = host.includes('vercel.app');
+    const isLocalhost = host === 'localhost' || host === '127.0.0.1';
+    // If on Hostinger or custom domain, always use full backend URL
+    if (!isVercel && !isLocalhost) {
+      return 'https://vibemed.just4madam.com/api/v1';
+    }
+  }
+  return envUrl || '/api/v1';
+};
+
+const BASE_URL = resolveApiBaseUrl();
 const TENANT = import.meta.env.VITE_API_TENANT || 'demo.just4madam.com';
 
 class ApiClient {
@@ -77,12 +95,18 @@ class ApiClient {
         }
       }
 
-      // Handle non-2xx responses
-      if (!response.ok) {
+      const isHtml = rawText && rawText.trim().startsWith('<');
+      if (isHtml) {
+        // Returned HTML (e.g. index.html SPA fallback instead of real API JSON)
+        responseData = null;
+      }
+
+      // Handle non-2xx responses or invalid HTML response for API
+      if (!response.ok || (isHtml && !url.includes('.html'))) {
         const errorMessage =
           responseData?.message ||
           responseData?.error ||
-          (rawText && rawText.length < 200 ? rawText : `Request failed with status ${response.status}`);
+          (isHtml ? 'API endpoint returned HTML instead of JSON. Ensure API Base URL points to backend server.' : `Request failed with status ${response.status}`);
         const error = new Error(errorMessage);
         error.status = response.status;
         error.data = responseData;

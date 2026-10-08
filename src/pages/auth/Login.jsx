@@ -260,7 +260,7 @@ export const Login = () => {
                   style={{ fontSize: 12, borderRadius: 6 }}
                   onClick={() => {
                     form.setFieldsValue({
-                      email: "dr.sarah@vibemed.health",
+                      email: "doctor@demo-medical-center.test",
                       password: "password",
                     });
                   }}
@@ -272,7 +272,7 @@ export const Login = () => {
                   style={{ fontSize: 12, borderRadius: 6 }}
                   onClick={() => {
                     form.setFieldsValue({
-                      email: "jessica.reception@vibemed.health",
+                      email: "reception@demo-medical-center.test",
                       password: "password",
                     });
                   }}
