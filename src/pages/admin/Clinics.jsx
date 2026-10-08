@@ -134,12 +134,15 @@ export const Clinics = () => {
 
   // Doctors assigned to this clinic
   const getDoctorsForClinic = (clinicId) => {
-    return doctors.filter((doc) => {
-      const schedule = doc.weekdaySchedule || {};
+    return (doctors || []).filter((doc) => {
+      const schedule = doc?.weekdaySchedule;
+      if (!schedule || typeof schedule !== 'object') return false;
       return Object.values(schedule).some(
         (day) =>
+          day &&
           day.enabled &&
-          day.slots?.some((slot) => slot.clinicId === clinicId)
+          Array.isArray(day.slots) &&
+          day.slots.some((slot) => String(slot.clinicId) === String(clinicId))
       );
     });
   };

@@ -8,6 +8,7 @@ import {
   Tag,
   Button,
   Input,
+  InputNumber,
   Select,
   Modal,
   Form,
@@ -18,6 +19,7 @@ import {
   Popconfirm,
   Tooltip,
   Divider,
+  Empty,
 } from 'antd';
 import {
   MedicineBoxOutlined,
@@ -33,6 +35,7 @@ import {
   DollarOutlined,
   TeamOutlined,
   AppstoreOutlined,
+  CheckCircleOutlined,
 } from '@ant-design/icons';
 import { PageHeader } from '../../components/common/PageHeader';
 import { doctorService } from '../../services/doctorService';
@@ -65,41 +68,41 @@ const createInitialSlots = () => ({
   Mon: {
     enabled: true,
     slots: [
-      { id: 'mon_1', start: '09:00 AM', end: '01:00 PM', clinicId: 'clinic_1', clinicName: 'Downtown Medical Center' },
-      { id: 'mon_2', start: '04:00 PM', end: '08:00 PM', clinicId: 'clinic_2', clinicName: 'Westside Family Care Clinic' },
+      { id: 'mon_1', start: '09:00 AM', end: '01:00 PM', clinicId: 'clinic_1', clinicName: 'Downtown Medical Center', sittingFee: 500 },
+      { id: 'mon_2', start: '04:00 PM', end: '08:00 PM', clinicId: 'clinic_2', clinicName: 'Westside Family Care Clinic', sittingFee: 350 },
     ],
   },
   Tue: {
     enabled: true,
     slots: [
-      { id: 'tue_1', start: '09:00 AM', end: '01:00 PM', clinicId: 'clinic_1', clinicName: 'Downtown Medical Center' },
-      { id: 'tue_2', start: '04:00 PM', end: '08:00 PM', clinicId: 'clinic_2', clinicName: 'Westside Family Care Clinic' },
+      { id: 'tue_1', start: '09:00 AM', end: '01:00 PM', clinicId: 'clinic_1', clinicName: 'Downtown Medical Center', sittingFee: 500 },
+      { id: 'tue_2', start: '04:00 PM', end: '08:00 PM', clinicId: 'clinic_2', clinicName: 'Westside Family Care Clinic', sittingFee: 350 },
     ],
   },
   Wed: {
     enabled: true,
     slots: [
-      { id: 'wed_1', start: '09:00 AM', end: '01:00 PM', clinicId: 'clinic_1', clinicName: 'Downtown Medical Center' },
-      { id: 'wed_2', start: '04:00 PM', end: '08:00 PM', clinicId: 'clinic_2', clinicName: 'Westside Family Care Clinic' },
+      { id: 'wed_1', start: '09:00 AM', end: '01:00 PM', clinicId: 'clinic_1', clinicName: 'Downtown Medical Center', sittingFee: 500 },
+      { id: 'wed_2', start: '04:00 PM', end: '08:00 PM', clinicId: 'clinic_2', clinicName: 'Westside Family Care Clinic', sittingFee: 350 },
     ],
   },
   Thu: {
     enabled: true,
     slots: [
-      { id: 'thu_1', start: '09:00 AM', end: '01:00 PM', clinicId: 'clinic_1', clinicName: 'Downtown Medical Center' },
-      { id: 'thu_2', start: '04:00 PM', end: '08:00 PM', clinicId: 'clinic_2', clinicName: 'Westside Family Care Clinic' },
+      { id: 'thu_1', start: '09:00 AM', end: '01:00 PM', clinicId: 'clinic_1', clinicName: 'Downtown Medical Center', sittingFee: 500 },
+      { id: 'thu_2', start: '04:00 PM', end: '08:00 PM', clinicId: 'clinic_2', clinicName: 'Westside Family Care Clinic', sittingFee: 350 },
     ],
   },
   Fri: {
     enabled: true,
     slots: [
-      { id: 'fri_1', start: '09:00 AM', end: '01:00 PM', clinicId: 'clinic_1', clinicName: 'Downtown Medical Center' },
-      { id: 'fri_2', start: '04:00 PM', end: '08:00 PM', clinicId: 'clinic_2', clinicName: 'Westside Family Care Clinic' },
+      { id: 'fri_1', start: '09:00 AM', end: '01:00 PM', clinicId: 'clinic_1', clinicName: 'Downtown Medical Center', sittingFee: 500 },
+      { id: 'fri_2', start: '04:00 PM', end: '08:00 PM', clinicId: 'clinic_2', clinicName: 'Westside Family Care Clinic', sittingFee: 350 },
     ],
   },
   Sat: {
     enabled: false,
-    slots: [{ id: 'sat_1', start: '09:00 AM', end: '01:00 PM', clinicId: 'clinic_2', clinicName: 'Westside Family Care Clinic' }],
+    slots: [{ id: 'sat_1', start: '09:00 AM', end: '01:00 PM', clinicId: 'clinic_2', clinicName: 'Westside Family Care Clinic', sittingFee: 350 }],
   },
   Sun: {
     enabled: false,
@@ -129,13 +132,22 @@ export const AdminDoctors = () => {
   const [form] = Form.useForm();
   const [specialtyQuickForm] = Form.useForm();
 
+  // Helper to test if a doctor has Available status
+  const isDoctorAvailable = (d) => {
+    const s = String(d?.status || '').toLowerCase().trim();
+    return s === 'available' || s === 'active';
+  };
+
   const loadData = async () => {
     const docs = await doctorService.getAll();
     const clinList = await clinicService.getAll();
     const specList = clinicService.getAllSpecialties();
 
-    setDoctors(docs);
-    setFilteredDoctors(docs);
+    // Show only Available doctors
+    const availableDocs = (docs || []).filter(isDoctorAvailable);
+
+    setDoctors(availableDocs);
+    setFilteredDoctors(availableDocs);
     setClinics(clinList);
     setSpecialties(specList);
   };
@@ -146,7 +158,8 @@ export const AdminDoctors = () => {
 
   // Filter effect
   useEffect(() => {
-    let result = doctors;
+    // Show only Available doctors
+    let result = (doctors || []).filter(isDoctorAvailable);
 
     if (selectedSpecialty !== 'All') {
       result = result.filter((d) => d.specialty === selectedSpecialty);
@@ -154,20 +167,24 @@ export const AdminDoctors = () => {
 
     if (selectedClinic !== 'All') {
       result = result.filter((d) => {
-        const schedule = d.weekdaySchedule || {};
+        const schedule = d?.weekdaySchedule;
+        if (!schedule || typeof schedule !== 'object') return false;
         return Object.values(schedule).some(
           (day) =>
+            day &&
             day.enabled &&
-            day.slots?.some((slot) => slot.clinicId === selectedClinic)
+            Array.isArray(day.slots) &&
+            day.slots.some((slot) => String(slot.clinicId) === String(selectedClinic))
         );
       });
     }
 
     if (searchQuery) {
+      const q = searchQuery.toLowerCase();
       result = result.filter(
         (d) =>
-          d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          d.specialty.toLowerCase().includes(searchQuery.toLowerCase())
+          String(d.name || '').toLowerCase().includes(q) ||
+          String(d.specialty || '').toLowerCase().includes(q)
       );
     }
 
@@ -227,6 +244,7 @@ export const AdminDoctors = () => {
         end: newEnd,
         clinicId: newClinic.id,
         clinicName: newClinic.name,
+        sittingFee: newClinic.sittingCharge || 400,
       };
 
       return {
@@ -254,7 +272,7 @@ export const AdminDoctors = () => {
     });
   };
 
-  // Update a field in a slot (start, end, clinicId)
+  // Update a field in a slot (start, end, clinicId, sittingFee)
   const handleUpdateSlotField = (dayKey, slotId, field, value) => {
     setWeekdaySchedule((prev) => ({
       ...prev,
@@ -268,6 +286,7 @@ export const AdminDoctors = () => {
               ...s,
               clinicId: value,
               clinicName: foundClinic ? foundClinic.name : s.clinicName,
+              sittingFee: s.sittingFee !== undefined ? s.sittingFee : (foundClinic ? foundClinic.sittingCharge : 400),
             };
           }
           return { ...s, [field]: value };
@@ -278,8 +297,8 @@ export const AdminDoctors = () => {
 
   // Quick preset: Mon - Fri standard shifts
   const applyMonToFri = () => {
-    const c1 = clinics[0] || { id: 'clinic_1', name: 'Downtown Medical Center' };
-    const c2 = clinics[1] || clinics[0] || { id: 'clinic_2', name: 'Westside Family Care Clinic' };
+    const c1 = clinics[0] || { id: 'clinic_1', name: 'Downtown Medical Center', sittingCharge: 500 };
+    const c2 = clinics[1] || clinics[0] || { id: 'clinic_2', name: 'Westside Family Care Clinic', sittingCharge: 350 };
 
     setWeekdaySchedule((prev) => {
       const updated = { ...prev };
@@ -287,8 +306,8 @@ export const AdminDoctors = () => {
         updated[d] = {
           enabled: true,
           slots: [
-            { id: `${d}_1`, start: '09:00 AM', end: '01:00 PM', clinicId: c1.id, clinicName: c1.name },
-            { id: `${d}_2`, start: '04:00 PM', end: '08:00 PM', clinicId: c2.id, clinicName: c2.name },
+            { id: `${d}_1`, start: '09:00 AM', end: '01:00 PM', clinicId: c1.id, clinicName: c1.name, sittingFee: c1.sittingCharge || 500 },
+            { id: `${d}_2`, start: '04:00 PM', end: '08:00 PM', clinicId: c2.id, clinicName: c2.name, sittingFee: c2.sittingCharge || 350 },
           ],
         };
       });
@@ -354,11 +373,11 @@ export const AdminDoctors = () => {
     enabledDays.forEach((day) => {
       weekdaySchedule[day].slots.forEach((s) => {
         if (!clinicsVisitedMap[s.clinicId]) {
-          const found = clinics.find((c) => c.id === s.clinicId);
+          const feeForClinic = s.sittingFee !== undefined ? Number(s.sittingFee) : (found ? found.sittingCharge : 400);
           clinicsVisitedMap[s.clinicId] = {
             clinicId: s.clinicId,
             clinicName: s.clinicName,
-            sittingFeePerDay: found ? found.sittingCharge : 400,
+            sittingFeePerDay: feeForClinic,
             daysWorked: 0,
             patientsTreated: 0,
             amountBilled: 0,
@@ -446,7 +465,7 @@ export const AdminDoctors = () => {
     <div>
       <PageHeader
         title="Physician Directory & Cross-Clinic Shifts"
-        subtitle="Manage hospital specialists, multi-location shift schedules, daily sitting charges, and patient billing"
+        subtitle="Manage available hospital specialists, multi-location shift schedules, daily sitting charges, and patient billing"
         extra={[
           <Button
             key="addSpecialty"
@@ -471,17 +490,17 @@ export const AdminDoctors = () => {
       {/* Filter Bar with Specialty AND Clinic Location filters */}
       <Card style={{ marginBottom: 20, borderRadius: 16, border: '1px solid #e2e8f0' }}>
         <Row gutter={[12, 12]} align="middle">
-          <Col xs={24} md={10}>
+          <Col xs={24} md={9}>
             <Input
               prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
-              placeholder="Search doctors by name or specialty..."
+              placeholder="Search available doctors by name or specialty..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               size="large"
               allowClear
             />
           </Col>
-          <Col xs={24} sm={12} md={7}>
+          <Col xs={24} sm={12} md={6}>
             <Select
               value={selectedSpecialty}
               onChange={(val) => setSelectedSpecialty(val)}
@@ -496,7 +515,7 @@ export const AdminDoctors = () => {
               ))}
             </Select>
           </Col>
-          <Col xs={24} sm={12} md={7}>
+          <Col xs={24} sm={12} md={5}>
             <Select
               value={selectedClinic}
               onChange={(val) => setSelectedClinic(val)}
@@ -511,12 +530,55 @@ export const AdminDoctors = () => {
               ))}
             </Select>
           </Col>
+          <Col xs={24} sm={12} md={4} style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Tag
+              color="success"
+              style={{
+                borderRadius: 8,
+                padding: '6px 12px',
+                fontSize: 12,
+                fontWeight: 600,
+                border: '1px solid #bbf7d0',
+                backgroundColor: '#f0fdf4',
+                color: '#166534',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                margin: 0,
+              }}
+            >
+              <CheckCircleOutlined style={{ color: '#16a34a' }} />
+              {filteredDoctors.length} Available
+            </Tag>
+          </Col>
         </Row>
       </Card>
 
       {/* Doctor Grid */}
-      <Row gutter={[16, 16]}>
-        {filteredDoctors.map((doc) => {
+      {filteredDoctors.length === 0 ? (
+        <Card
+          style={{
+            borderRadius: 16,
+            border: '1px solid #e2e8f0',
+            textAlign: 'center',
+            padding: '48px 24px',
+            background: '#ffffff',
+          }}
+        >
+          <Empty
+            description={
+              <div>
+                <strong style={{ fontSize: 16, color: '#0f172a' }}>No Available Doctors Found</strong>
+                <div style={{ color: '#64748b', fontSize: 13, marginTop: 4 }}>
+                  No doctors currently marked Available match your selected filters. Try clearing search filters or add a new doctor.
+                </div>
+              </div>
+            }
+          />
+        </Card>
+      ) : (
+        <Row gutter={[16, 16]}>
+          {filteredDoctors.map((doc) => {
           const stats = doc.monthlyStats || {};
           const clinicsPracticed = stats.clinicsBreakdown || [];
 
@@ -566,11 +628,14 @@ export const AdminDoctors = () => {
                     </div>
                     <Space size={3} wrap>
                       {clinicsPracticed.length > 0 ? (
-                        clinicsPracticed.map((cb) => (
-                          <Tag key={cb.clinicId} color="purple" style={{ fontSize: 10, margin: 0, padding: '1px 5px' }}>
-                            {cb.clinicName.split(' ')[0]} ({cb.daysWorked}d)
-                          </Tag>
-                        ))
+                        clinicsPracticed.map((cb) => {
+                          const cName = cb.clinicName ? String(cb.clinicName).split(' ')[0] : 'Clinic';
+                          return (
+                            <Tag key={cb.clinicId || Math.random()} color="purple" style={{ fontSize: 10, margin: 0, padding: '1px 5px' }}>
+                              {cName} ({cb.daysWorked || 0}d)
+                            </Tag>
+                          );
+                        })
                       ) : (
                         <Tag color="default" style={{ fontSize: 10 }}>Downtown Clinic</Tag>
                       )}
@@ -672,6 +737,7 @@ export const AdminDoctors = () => {
           );
         })}
       </Row>
+    )}
 
       {/* ========================================================
           ADD DOCTOR MODAL WITH MULTI-LOCATION CROSS-CLINIC SHIFTS
@@ -939,12 +1005,32 @@ export const AdminDoctors = () => {
                                   size="small"
                                   value={slot.clinicId}
                                   onChange={(val) => handleUpdateSlotField(key, slot.id, 'clinicId', val)}
-                                  style={{ width: 220 }}
+                                  style={{ width: 200 }}
                                   options={clinics.map((c) => ({
-                                    label: `${c.name} ($${c.sittingCharge}/d)`,
+                                    label: `${c.name} (Base $${c.sittingCharge}/d)`,
                                     value: c.id,
                                   }))}
                                 />
+                              </div>
+
+                              {/* Doctor Custom Sitting Fee for this Clinic */}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <DollarOutlined style={{ color: '#0d9488' }} />
+                                <Text type="secondary" style={{ fontSize: 11 }}>Doctor Sitting Fee:</Text>
+                                <InputNumber
+                                  size="small"
+                                  min={0}
+                                  max={10000}
+                                  prefix="$"
+                                  value={
+                                    slot.sittingFee !== undefined
+                                      ? slot.sittingFee
+                                      : clinics.find((c) => c.id === slot.clinicId)?.sittingCharge || 400
+                                  }
+                                  onChange={(val) => handleUpdateSlotField(key, slot.id, 'sittingFee', val)}
+                                  style={{ width: 115 }}
+                                />
+                                <Text type="secondary" style={{ fontSize: 10 }}>/day</Text>
                               </div>
 
                               {/* Remove Shift */}

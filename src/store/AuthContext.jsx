@@ -1,28 +1,34 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { authService, DEMO_USERS } from '../services/authService';
+import { authService } from '../services/authService';
 
 export const AuthContext = createContext(null);
 
+const normalizeRole = (role) => {
+  const r = (role || '').toLowerCase();
+  if (r.includes('admin')) return 'admin';
+  if (r.includes('doc')) return 'doctor';
+  if (r.includes('recept')) return 'receptionist';
+  if (r.includes('pat')) return 'patient';
+  return r || 'admin';
+};
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Synchronous initialization prevents unauthenticated flash and redirect loops on page refresh
+  const [user, setUser] = useState(() => authService.getCurrentUser());
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Check localStorage session on mount
+    // Re-verify localStorage session on mount
     const current = authService.getCurrentUser();
-    if (current) {
+    if (current && (!user || user.id !== current.id)) {
       setUser(current);
-    } else {
-      // Default to doctor demo or null
-      setUser(DEMO_USERS.doctor);
     }
-    setLoading(false);
   }, []);
 
-  const login = async ({ email, role }) => {
+  const login = async ({ email, password, role }) => {
     setLoading(true);
     try {
-      const session = await authService.login({ email, role });
+      const session = await authService.login({ email, password, role });
       setUser(session.user);
       return session.user;
     } finally {
@@ -41,33 +47,28 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const switchDemoRole = (roleKey) => {
-    const demoUser = DEMO_USERS[roleKey];
-    if (demoUser) {
-      setUser(demoUser);
-      authService.login({ email: demoUser.email, role: demoUser.role });
-    }
-  };
-
   const logout = () => {
     authService.logout();
     setUser(null);
   };
 
+  const normalizedRole = user ? normalizeRole(user.role) : null;
+
   return (
     <AuthContext.Provider
       value={{
         user,
-        role: user?.role || null,
+        role: normalizedRole,
         isAuthenticated: !!user,
         loading,
         login,
         register,
         logout,
-        switchDemoRole,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
+
+export default AuthProvider;

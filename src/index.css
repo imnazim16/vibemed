@@ -289,6 +289,188 @@ body {
 }
 
 /* =========================================================
+   RESPONSIVE PAGE HEADER & ACTION BUTTONS
+   ========================================================= */
+.vibemed-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: 100%;
+}
+
+.vibemed-page-header-text {
+  flex: 1 1 auto;
+  min-width: 250px;
+}
+
+.vibemed-page-header-title {
+  margin: 0 !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+}
+
+.vibemed-page-header-subtitle {
+  margin: 4px 0 0 !important;
+  margin-bottom: 0 !important;
+  font-size: 14px !important;
+  color: #64748b !important;
+  line-height: 1.4 !important;
+}
+
+.vibemed-page-header-text p {
+  margin-bottom: 0 !important;
+}
+
+.vibemed-page-header-actions {
+  flex: 0 1 auto;
+  max-width: 100%;
+}
+
+.vibemed-actions-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+}
+
+.vibemed-action-item {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Universal Button Responsiveness */
+.ant-btn {
+  white-space: normal !important;
+  word-break: keep-all;
+  height: auto;
+  min-height: 32px;
+}
+
+@media (max-width: 768px) {
+  .vibemed-page-header {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .vibemed-page-header-text {
+    flex: 0 0 auto !important;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .vibemed-page-header-actions {
+    width: 100%;
+    margin-top: 0;
+  }
+
+  .vibemed-actions-wrap {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .vibemed-action-item {
+    flex: 1 1 auto;
+    min-width: 130px;
+  }
+
+  .vibemed-action-item .ant-btn,
+  .vibemed-action-item .ant-select {
+    width: 100% !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+
+  .vibemed-action-item .ant-select-selector {
+    border-radius: 8px !important;
+  }
+
+  .ant-btn {
+    min-height: 36px;
+  }
+
+  .ant-card-head-wrapper {
+    flex-wrap: wrap !important;
+    gap: 8px;
+  }
+
+  .ant-space {
+    flex-wrap: wrap !important;
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .vibemed-action-item {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .vibemed-action-item .ant-btn {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   ADAPTIVE TABLE VS MOBILE CARDS ARCHITECTURE
+   ========================================================= */
+.vibemed-desktop-table {
+  display: block;
+  width: 100%;
+}
+
+.vibemed-mobile-cards {
+  display: none;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .vibemed-desktop-table {
+    display: none !important;
+  }
+
+  .vibemed-mobile-cards {
+    display: block !important;
+  }
+}
+
+.vibemed-mobile-item-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.vibemed-mobile-item-card:active {
+  transform: scale(0.99);
+}
+
+.vibemed-card-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.vibemed-card-actions-row .ant-btn {
+  flex: 1 1 120px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  font-size: 13px;
+}
+
+/* =========================================================
    PRINT & PDF INVOICE EXPORT STYLING
    ========================================================= */
 @media print {

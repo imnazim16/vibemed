@@ -5,7 +5,6 @@ import {
   BellOutlined,
   LogoutOutlined,
   UserOutlined,
-  SwapOutlined,
   MenuOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../../hooks/useAuth';
@@ -14,49 +13,13 @@ import { useNavigate } from 'react-router-dom';
 const { Text } = Typography;
 
 export const Header = ({ onToggleMobileMenu }) => {
-  const { user, logout, switchDemoRole } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    const isPatient = user?.role === 'patient';
     logout();
-    navigate('/login');
-  };
-
-  const roleMenu = {
-    items: [
-      {
-        key: 'doctor',
-        label: 'Switch to Doctor (Dr. Sarah)',
-        onClick: () => {
-          switchDemoRole('doctor');
-          navigate('/doctor/dashboard');
-        },
-      },
-      {
-        key: 'patient',
-        label: 'Switch to Patient (Alex)',
-        onClick: () => {
-          switchDemoRole('patient');
-          navigate('/patient/dashboard');
-        },
-      },
-      {
-        key: 'admin',
-        label: 'Switch to Admin (Eleanor)',
-        onClick: () => {
-          switchDemoRole('admin');
-          navigate('/admin/dashboard');
-        },
-      },
-      {
-        key: 'receptionist',
-        label: 'Switch to Receptionist (Jessica)',
-        onClick: () => {
-          switchDemoRole('receptionist');
-          navigate('/receptionist/dashboard');
-        },
-      },
-    ],
+    navigate(isPatient ? '/patient-login' : '/login');
   };
 
   const userMenu = {
@@ -64,7 +27,7 @@ export const Header = ({ onToggleMobileMenu }) => {
       {
         key: 'profile',
         icon: <UserOutlined />,
-        label: `${user?.name || 'User'} (${user?.role})`,
+        label: `${user?.name || 'User'} (${user?.role || 'User'})`,
         disabled: true,
       },
       {
@@ -119,17 +82,6 @@ export const Header = ({ onToggleMobileMenu }) => {
 
       {/* Right Controls */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        {/* Quick Demo Switcher */}
-        <Dropdown menu={roleMenu} placement="bottomRight" trigger={['click']}>
-          <Button
-            size="small"
-            icon={<SwapOutlined />}
-            className="vibemed-switch-role-btn"
-          >
-            <span className="vibemed-btn-label">Switch Role</span>
-          </Button>
-        </Dropdown>
-
         <Tag
           color={getRoleColor(user?.role)}
           className="vibemed-header-role-tag"

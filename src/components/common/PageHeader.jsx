@@ -1,32 +1,41 @@
 import React from 'react';
-import { Typography, Space } from 'antd';
+import { Typography } from 'antd';
 
 const { Title, Paragraph } = Typography;
 
 export const PageHeader = ({ title, subtitle, extra }) => {
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: 24,
-        flexWrap: 'wrap',
-        gap: 16,
-      }}
-    >
-      <div>
-        <Title level={3} style={{ margin: 0, fontWeight: 700, color: '#0f172a' }}>
+    <div className="vibemed-page-header">
+      <div className="vibemed-page-header-text">
+        <Title level={3} className="vibemed-page-header-title" style={{ margin: 0 }}>
           {title}
         </Title>
         {subtitle && (
-          <Paragraph type="secondary" style={{ margin: '4px 0 0', fontSize: 14 }}>
+          <Paragraph type="secondary" className="vibemed-page-header-subtitle" style={{ margin: '4px 0 0', marginBottom: 0 }}>
             {subtitle}
           </Paragraph>
         )}
       </div>
 
-      {extra && <Space size="middle">{extra}</Space>}
+      {extra && (
+        <div className="vibemed-page-header-actions">
+          {Array.isArray(extra) ? (
+            <div className="vibemed-actions-wrap">
+              {extra.map((item, index) => (
+                <div key={item?.key || index} className="vibemed-action-item">
+                  {item}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="vibemed-actions-wrap">
+              <div className="vibemed-action-item">{extra}</div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
+
+export default PageHeader;

@@ -160,12 +160,12 @@ export const DoctorDetailsModal = ({ open, onCancel, doctor, onBook, onDelete })
                 >
                   <span>
                     <ShopOutlined style={{ marginRight: 4, color: '#0d9488' }} />
-                    <strong>{cb.clinicName}</strong> ({cb.daysWorked} days):
+                    <strong>{cb.clinicName}</strong> ({cb.daysWorked || 0} days):
                   </span>
                   <span>
-                    {cb.patientsTreated} patients • Billed: <strong>${cb.amountBilled.toLocaleString()}</strong> •
-                    Sitting Fee: <span style={{ color: '#dc2626' }}>-${cb.totalSittingFee.toLocaleString()}</span> •
-                    Net: <strong style={{ color: '#0d9488' }}>${cb.netPayout.toLocaleString()}</strong>
+                    {cb.patientsTreated || 0} patients • Billed: <strong>${(Number(cb.amountBilled) || 0).toLocaleString()}</strong> •
+                    Sitting Fee: <span style={{ color: '#dc2626' }}>-${(Number(cb.totalSittingFee) || 0).toLocaleString()} {cb.sittingFeePerDay ? `($${cb.sittingFeePerDay}/d)` : ''}</span> •
+                    Net: <strong style={{ color: '#0d9488' }}>${(Number(cb.netPayout) || 0).toLocaleString()}</strong>
                   </span>
                 </div>
               ))}
@@ -197,10 +197,11 @@ export const DoctorDetailsModal = ({ open, onCancel, doctor, onBook, onDelete })
                     {isEnabled ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                         {data.slots.map((slot, idx) => {
+                          const sittingText = slot.sittingFee ? ` (Fee: $${slot.sittingFee}/d)` : '';
                           const slotText =
                             typeof slot === 'string'
                               ? slot
-                              : `${slot.start} - ${slot.end} @ ${slot.clinicName || 'Downtown Clinic'}`;
+                              : `${slot.start} - ${slot.end} @ ${slot.clinicName || 'Downtown Clinic'}${sittingText}`;
 
                           return (
                             <Tag

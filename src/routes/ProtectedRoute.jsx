@@ -1,10 +1,11 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Spin } from 'antd';
 
 export const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, role, loading, isAuthenticated } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -14,13 +15,27 @@ export const ProtectedRoute = ({ children, allowedRoles }) => {
     );
   }
 
+  // Not authenticated: strictly redirect to appropriate login portal
   if (!isAuthenticated || !user) {
-    return <Navigate to="/login" replace />;
+    const isPatientPath =
+      location.pathname.startsWith('/patient') ||
+      (allowedRoles && allowedRoles.includes('patient') && allowedRoles.length === 1);
+    return <Navigate to={isPatientPath ? '/patient-login' : '/login'} state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(role)) {
-    // Redirect to the user's primary dashboard
-    switch (role) {
+  // Normalize role casing and common aliases
+  const rawRole = (role || user?.role || '').toLowerCase();
+  let normalizedRole = rawRole;
+  if (rawRole.includes('admin')) normalizedRole = 'admin';
+  else if (rawRole.includes('doc')) normalizedRole = 'doctor';
+  else if (rawRole.includes('recept')) normalizedRole = 'receptionist';
+  else if (rawRole.includes('pat')) normalizedRole = 'patient';
+
+  const normalizedAllowedRoles = (allowedRoles || []).map((r) => r.toLowerCase());
+
+  // Check if role is authorized for this route
+  if (normalizedAllowedRoles.length > 0 && !normalizedAllowedRoles.includes(normalizedRole)) {
+    switch (normalizedRole) {
       case 'admin':
         return <Navigate to="/admin/dashboard" replace />;
       case 'doctor':

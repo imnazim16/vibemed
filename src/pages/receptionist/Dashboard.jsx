@@ -143,13 +143,53 @@ export const ReceptionistDashboard = () => {
         extra={<a onClick={() => navigate('/receptionist/queue')}>Full Screen View</a>}
         style={{ borderRadius: 16, border: '1px solid #e2e8f0' }}
       >
-        <Table
-          dataSource={queue}
-          columns={queueColumns}
-          rowKey="id"
-          pagination={{ pageSize: 5 }}
-          scroll={{ x: 650 }}
-        />
+        {/* Desktop Table View */}
+        <div className="vibemed-desktop-table">
+          <Table
+            dataSource={queue}
+            columns={queueColumns}
+            rowKey="id"
+            pagination={{ pageSize: 5 }}
+            scroll={{ x: 650 }}
+          />
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="vibemed-mobile-cards">
+          {queue.slice(0, 5).map((q) => (
+            <div
+              key={q.id}
+              style={{
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: 10,
+                padding: '12px 14px',
+                marginBottom: 10,
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Tag color="cyan" style={{ fontWeight: 700, margin: 0 }}>
+                    {q.tokenNumber}
+                  </Tag>
+                  <strong style={{ fontSize: 14, color: '#0f172a' }}>{q.patientName}</strong>
+                </div>
+                <Tag color={q.status === 'In-Progress' ? 'processing' : 'default'} style={{ margin: 0 }}>
+                  {q.status}
+                </Tag>
+              </div>
+              <div style={{ fontSize: 12, color: '#64748b', marginBottom: 6 }}>
+                Doctor: <strong style={{ color: '#334155' }}>{q.doctorName}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
+                <span style={{ color: '#64748b' }}>Slot: <strong>{q.time}</strong></span>
+                <Tag color={q.priority === 'High' ? 'red' : 'blue'} style={{ margin: 0 }}>
+                  {q.priority} Priority
+                </Tag>
+              </div>
+            </div>
+          ))}
+        </div>
       </Card>
 
       <BookAppointmentModal

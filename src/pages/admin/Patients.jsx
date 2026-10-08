@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Input, Button, Modal, Form, Select, message } from 'antd';
+import { Card, Input, Button, Modal, Form, Select, message, Alert } from 'antd';
 import { SearchOutlined, UserAddOutlined } from '@ant-design/icons';
 import { PageHeader } from '../../components/common/PageHeader';
 import { PatientsTable } from '../../components/tables/PatientsTable';
@@ -17,14 +17,44 @@ export const AdminPatients = () => {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [bookingPatient, setBookingPatient] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [apiNotice, setApiNotice] = useState(null);
   const [form] = Form.useForm();
 
   const loadPatients = async () => {
     setLoading(true);
-    const data = await patientService.getAll();
-    setPatients(data);
-    setFilteredPatients(data);
-    setLoading(false);
+    try {
+      const data = await patientService.getAll();
+      setPatients(data || []);
+      setFilteredPatients(data || []);
+
+      const status = patientService.getApiStatus();
+      if (status.hasError) {
+        setApiNotice({
+          title: 'Live Patient Records Temporarily Offline',
+          description:
+            'The remote Patient API is currently unreachable. Showing local EHR directory. Note that all other modules (Doctors Roster, Clinics, Revenue, and Appointments) are working normally.',
+          type: 'warning',
+        });
+      } else if (status.empty) {
+        setApiNotice({
+          title: 'No Patient Records Found on Server',
+          description:
+            'No patient records have been added to this tenant database yet. Use "Register Patient" to admit your first patient. Other system sections are fully active.',
+          type: 'info',
+        });
+      } else {
+        setApiNotice(null);
+      }
+    } catch (err) {
+      console.error('Error fetching patient list:', err);
+      setApiNotice({
+        title: 'Patient Directory Service Notice',
+        description: 'Unable to synchronize with live patient database. Using local cache. Other system modules remain fully functional.',
+        type: 'warning',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -76,6 +106,22 @@ export const AdminPatients = () => {
         ]}
       />
 
+      {/* Patient API Notice */}
+      {apiNotice && (
+        <Alert
+          message={apiNotice.title}
+          description={apiNotice.description}
+          type={apiNotice.type}
+          showIcon
+          closable
+          style={{
+            marginBottom: 20,
+            borderRadius: 12,
+            border: apiNotice.type === 'warning' ? '1px solid #fed7aa' : '1px solid #bae6fd',
+          }}
+        />
+      )}
+
       <Card style={{ marginBottom: 20, borderRadius: 16, border: '1px solid #e2e8f0' }}>
         <Input
           prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
@@ -118,12 +164,12 @@ export const AdminPatients = () => {
         onCancel={() => setIsAddModalOpen(false)}
         footer={null}
       >
-        <Form form={form} layout="vertical" onFinish={handleAddPatient} style={{ paddingTop: 12 }}>
+        <Form form={form} layout="vertical" onFinish={handleAddPatient}>
           <Form.Item name="name" label="Full Name" rules={[{ required: true }]}>
-            <Input placeholder="Alex Morgan" />
+            <Input placeholder="e.g. John Doe" />
           </Form.Item>
           <Form.Item name="age" label="Age" rules={[{ required: true }]}>
-            <Input type="number" placeholder="32" />
+            <Input type="number" placeholder="e.g. 45" />
           </Form.Item>
           <Form.Item name="gender" label="Gender" rules={[{ required: true }]}>
             <Select placeholder="Select gender">
@@ -133,33 +179,33 @@ export const AdminPatients = () => {
             </Select>
           </Form.Item>
           <Form.Item name="bloodGroup" label="Blood Group" rules={[{ required: true }]}>
-            <Select placeholder="Select blood type">
+            <Select placeholder="Select blood group">
               <Option value="A+">A+</Option>
               <Option value="A-">A-</Option>
               <Option value="B+">B+</Option>
               <Option value="B-">B-</Option>
-              <Option value="O+">O+</Option>
-              <Option value="O-">O-</Option>
               <Option value="AB+">AB+</Option>
               <Option value="AB-">AB-</Option>
+              <Option value="O+">O+</Option>
+              <Option value="O-">O-</Option>
             </Select>
           </Form.Item>
-          <Form.Item name="phone" label="Phone Number" rules={[{ required: true }]}>
+          <Form.Item name="phone" label="Phone" rules={[{ required: true }]}>
             <Input placeholder="+1 (555) 000-0000" />
           </Form.Item>
-          <Form.Item name="condition" label="Current Condition / Diagnosis">
-            <Input placeholder="e.g. Hypertension Stage 1" />
+          <Form.Item name="email" label="Email">
+            <Input type="email" placeholder="patient@example.com" />
           </Form.Item>
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              block
-              style={{ backgroundColor: '#0d9488', borderRadius: 8 }}
-            >
-              Save Patient Profile
-            </Button>
+          <Form.Item name="address" label="Address">
+            <Input.TextArea placeholder="Enter residential address" />
           </Form.Item>
+          <Form.Item name="condition" label="Initial Diagnosis / Medical Reason">
+            <Input placeholder="e.g. Annual physical exam" />
+          </Form.Item>
+
+          <Button type="primary" htmlType="submit" block style={{ backgroundColor: '#0d9488' }}>
+            Save Patient File
+          </Button>
         </Form>
       </Modal>
     </div>

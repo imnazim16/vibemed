@@ -31,7 +31,10 @@ export const AdminAppointments = () => {
 
   const getFilteredAppointments = () => {
     if (activeTab === 'all') return appointments;
-    return appointments.filter((a) => a.status.toLowerCase() === activeTab.toLowerCase());
+    return appointments.filter((a) => {
+      const s = typeof a.status === 'object' ? a.status?.name : String(a.status || '');
+      return s.toLowerCase() === activeTab.toLowerCase();
+    });
   };
 
   return (

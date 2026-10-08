@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Header } from '../components/common/Header';
 import { Sidebar } from '../components/common/Sidebar';
+import { ErrorBoundary } from '../components/common/ErrorBoundary';
 
 export const PatientLayout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -15,7 +16,9 @@ export const PatientLayout = () => {
           onClose={() => setMobileMenuOpen(false)}
         />
         <main className="vibemed-main-content">
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
     </div>

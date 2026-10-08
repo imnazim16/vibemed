@@ -183,8 +183,12 @@ export const Register = () => {
           <div className="vibemed-auth-footer">
             <span>
               Already have an account?{' '}
-              <Link to="/login" style={{ color: '#0d9488', fontWeight: 600 }}>
-                Sign in
+              <Link to="/patient-login" style={{ color: '#0d9488', fontWeight: 600 }}>
+                Patient Sign In
+              </Link>
+              {' · '}
+              <Link to="/login" style={{ color: '#64748b', fontWeight: 500 }}>
+                Staff Sign In
               </Link>
             </span>
           </div>

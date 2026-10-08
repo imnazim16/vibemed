@@ -1,96 +1,57 @@
-import React, { useState } from 'react';
-import { Form, Input, Button, Checkbox, Tabs, Divider, message, Space, Typography } from 'antd';
+import React, { useState } from "react";
+import { Form, Input, Button, Checkbox, message, Typography } from "antd";
 import {
-  UserOutlined,
   LockOutlined,
   MailOutlined,
   MedicineBoxOutlined,
   HeartOutlined,
   SafetyCertificateOutlined,
   VideoCameraOutlined,
-  IdcardOutlined,
-  GoogleOutlined,
   ArrowRightOutlined,
   TeamOutlined,
-} from '@ant-design/icons';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import '../../components/Login.css';
+} from "@ant-design/icons";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+import "../../components/Login.css";
 
 const { Text, Title } = Typography;
 
-const DEMO_ACCOUNTS = [
-  {
-    label: 'Doctor Demo',
-    role: 'doctor',
-    email: 'dr.sarah@vibemed.health',
-    name: 'Dr. Sarah Connor',
-  },
-  {
-    label: 'Patient Demo',
-    role: 'patient',
-    email: 'alex.morgan@vibemed.health',
-    name: 'Alex Morgan',
-  },
-  {
-    label: 'Admin Demo',
-    role: 'admin',
-    email: 'admin@vibemed.health',
-    name: 'Eleanor Vance',
-  },
-  {
-    label: 'Receptionist Demo',
-    role: 'receptionist',
-    email: 'jessica.reception@vibemed.health',
-    name: 'Jessica Taylor',
-  },
-];
-
 export const Login = () => {
-  const [selectedRole, setSelectedRole] = useState('doctor');
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const { login } = useAuth();
   const navigate = useNavigate();
-
-  const handleDemoFill = (account) => {
-    setSelectedRole(account.role);
-    form.setFieldsValue({
-      email: account.email,
-      password: 'Password123!',
-      remember: true,
-    });
-    message.info(`Loaded demo credentials for ${account.label}`);
-  };
 
   const handleFinish = async (values) => {
     setLoading(true);
     try {
       const user = await login({
         email: values.email,
-        role: selectedRole,
+        password: values.password,
       });
 
       message.success(`Welcome back, ${user.name}!`);
 
-      // Navigate to respective dashboard
+      // Navigate to respective staff dashboard
       switch (user.role) {
-        case 'admin':
-          navigate('/admin/dashboard');
+        case "admin":
+          navigate("/admin/dashboard");
           break;
-        case 'doctor':
-          navigate('/doctor/dashboard');
+        case "doctor":
+          navigate("/doctor/dashboard");
           break;
-        case 'receptionist':
-          navigate('/receptionist/dashboard');
+        case "receptionist":
+          navigate("/receptionist/dashboard");
           break;
-        case 'patient':
+        case "patient":
+          navigate("/patient/dashboard");
+          break;
         default:
-          navigate('/patient/dashboard');
+          navigate("/admin/dashboard");
           break;
       }
-    } catch {
-      message.error('Failed to log in. Please check your credentials.');
+    } catch (err) {
+      message.error(err?.message || "Failed to log in. Please check your credentials.");
     } finally {
       setLoading(false);
     }
@@ -102,8 +63,8 @@ export const Login = () => {
         {/* Left Hero */}
         <div className="vibemed-hero-side">
           <div className="vibemed-brand-badge">
-            <HeartOutlined style={{ color: '#0d9488' }} />
-            <span>INTELLIGENT HEALTHCARE PLATFORM</span>
+            <HeartOutlined style={{ color: "#0d9488" }} />
+            <span>CLINICAL & ADMINISTRATIVE PORTAL</span>
           </div>
 
           <div className="vibemed-logo-title">
@@ -118,7 +79,8 @@ export const Login = () => {
           </h2>
 
           <p className="vibemed-hero-desc">
-            Unified ecosystem connecting patients, doctors, administrators, and front-desk teams with real-time EHR, telehealth, and clinic automation.
+            Unified ecosystem connecting doctors, administrators, and front-desk
+            teams with real-time EHR, telehealth, and multi-clinic automation.
           </p>
 
           <div className="vibemed-features-list">
@@ -146,9 +108,11 @@ export const Login = () => {
               <div className="vibemed-feature-icon">
                 <HeartOutlined />
               </div>
-              <div className="vibemed-feature-title">Vitals Tracking</div>
+              <div className="vibemed-feature-title">
+                Multi-Clinic Schedules
+              </div>
               <div className="vibemed-feature-subtitle">
-                Real-time patient telemetry for BP, Glucose, and SpO2.
+                Cross-branch physician shifts, time slots, and doctor fees.
               </div>
             </div>
 
@@ -167,124 +131,85 @@ export const Login = () => {
         {/* Right Auth Card */}
         <div className="vibemed-auth-card">
           <div className="vibemed-auth-header">
-            <Title level={3} className="vibemed-auth-title">
-              Sign in to VibeMed
+            <Title
+              level={3}
+              className="vibemed-auth-title"
+              style={{ marginBottom: 6 }}
+            >
+              Staff & Provider Sign In
             </Title>
             <Text className="vibemed-auth-subtitle">
-              Select your role and enter credentials to continue
+              Enter your clinical credentials to access your portal
             </Text>
           </div>
-
-          {/* Quick Demo Logins */}
-          <div className="vibemed-demo-section">
-            <span className="vibemed-demo-label">Quick Demo Logins (Click to Autofill):</span>
-            <div className="vibemed-demo-chips">
-              {DEMO_ACCOUNTS.map((acc) => (
-                <button
-                  key={acc.role}
-                  type="button"
-                  className={`vibemed-demo-chip ${selectedRole === acc.role ? 'active' : ''}`}
-                  onClick={() => handleDemoFill(acc)}
-                >
-                  {acc.role === 'doctor' && <MedicineBoxOutlined />}
-                  {acc.role === 'patient' && <UserOutlined />}
-                  {acc.role === 'admin' && <SafetyCertificateOutlined />}
-                  {acc.role === 'receptionist' && <TeamOutlined />}
-                  {acc.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Role Selection Tabs */}
-          <Tabs
-            activeKey={selectedRole}
-            onChange={(key) => setSelectedRole(key)}
-            centered
-            items={[
-              {
-                key: 'doctor',
-                label: (
-                  <span>
-                    <MedicineBoxOutlined /> Doctor
-                  </span>
-                ),
-              },
-              {
-                key: 'patient',
-                label: (
-                  <span>
-                    <UserOutlined /> Patient
-                  </span>
-                ),
-              },
-              {
-                key: 'admin',
-                label: (
-                  <span>
-                    <SafetyCertificateOutlined /> Admin
-                  </span>
-                ),
-              },
-              {
-                key: 'receptionist',
-                label: (
-                  <span>
-                    <TeamOutlined /> Reception
-                  </span>
-                ),
-              },
-            ]}
-          />
 
           <Form
             form={form}
             layout="vertical"
             initialValues={{
-              email: 'dr.sarah@vibemed.health',
-              password: 'Password123!',
+              email: "admin@demo-medical-center.test",
+              password: "password",
               remember: true,
             }}
             onFinish={handleFinish}
             requiredMark={false}
             size="large"
-            style={{ marginTop: 16 }}
+            style={{ marginTop: 24 }}
           >
             <Form.Item
               name="email"
-              label="Email Address"
+              label="Staff Email or ID"
               rules={[
-                { required: true, message: 'Please enter your email' },
-                { type: 'email', message: 'Enter a valid email' },
+                {
+                  required: true,
+                  message: "Please enter your staff email or ID",
+                },
               ]}
             >
-              <Input prefix={<MailOutlined style={{ color: '#94a3b8' }} />} placeholder="name@vibemed.health" />
+              <Input
+                prefix={<MailOutlined style={{ color: "#94a3b8" }} />}
+                placeholder="admin@demo-medical-center.test"
+              />
             </Form.Item>
 
             <Form.Item
               name="password"
               label="Password"
-              rules={[{ required: true, message: 'Please enter your password' }]}
+              rules={[
+                { required: true, message: "Please enter your password" },
+              ]}
             >
-              <Input.Password prefix={<LockOutlined style={{ color: '#94a3b8' }} />} placeholder="••••••••••••" />
+              <Input.Password
+                prefix={<LockOutlined style={{ color: "#94a3b8" }} />}
+                placeholder="••••••••••••"
+              />
             </Form.Item>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 20,
+              }}
+            >
               <Form.Item name="remember" valuePropName="checked" noStyle>
                 <Checkbox>Remember me</Checkbox>
               </Form.Item>
               <a
                 onClick={(e) => {
                   e.preventDefault();
-                  message.info('Reset instructions sent to your email.');
+                  message.info(
+                    "Password reset instructions sent to your email.",
+                  );
                 }}
-                style={{ color: '#0d9488', fontSize: 13 }}
+                style={{ color: "#0d9488", fontSize: 13, cursor: "pointer" }}
               >
                 Forgot password?
               </a>
             </div>
 
-            <Form.Item style={{ marginBottom: 14 }}>
+            <Form.Item style={{ marginBottom: 16 }}>
               <Button
                 type="primary"
                 htmlType="submit"
@@ -293,30 +218,27 @@ export const Login = () => {
                 className="vibemed-submit-btn"
                 icon={<ArrowRightOutlined />}
               >
-                Sign In as {selectedRole.toUpperCase()}
+                Sign In to Staff Portal
               </Button>
             </Form.Item>
           </Form>
 
-          <Divider plain style={{ margin: '14px 0', color: '#94a3b8', fontSize: 12 }}>
-            or continue with
-          </Divider>
-
-          <Button
-            block
-            size="large"
-            icon={<GoogleOutlined />}
-            style={{ borderRadius: 10, borderColor: '#cbd5e1' }}
-            onClick={() => message.info('Google SSO authentication active')}
+          <div
+            className="vibemed-auth-footer"
+            style={{
+              marginTop: 24,
+              textAlign: "center",
+              paddingTop: 16,
+              borderTop: "1px solid #f1f5f9",
+            }}
           >
-            Google Workspace / Health SSO
-          </Button>
-
-          <div className="vibemed-auth-footer">
-            <span>
-              Don't have an account?{' '}
-              <Link to="/register" style={{ color: '#0d9488', fontWeight: 600 }}>
-                Register here
+            <span style={{ color: "#64748b", fontSize: 14 }}>
+              Are you a patient looking for care?{" "}
+              <Link
+                to="/patient-login"
+                style={{ color: "#0d9488", fontWeight: 600 }}
+              >
+                Go to Patient Portal &rarr;
               </Link>
             </span>
           </div>

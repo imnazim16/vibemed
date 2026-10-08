@@ -17,12 +17,22 @@ import {
 import { useAuth } from '../../hooks/useAuth';
 
 export const Sidebar = ({ mobileOpen, onClose }) => {
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
+  const getEffectiveRole = () => {
+    const raw = (role || user?.role || 'admin').toLowerCase();
+    if (raw.includes('admin')) return 'admin';
+    if (raw.includes('doc')) return 'doctor';
+    if (raw.includes('recept')) return 'receptionist';
+    if (raw.includes('pat')) return 'patient';
+    return 'admin';
+  };
+
   const getMenuItems = () => {
-    switch (role) {
+    const activeRole = getEffectiveRole();
+    switch (activeRole) {
       case 'admin':
         return [
           {
@@ -136,10 +146,13 @@ export const Sidebar = ({ mobileOpen, onClose }) => {
     }
   };
 
-  const menuContent = (
+  // Determine current active key with support for index routes
+  const activeKey = location.pathname;
+
+  const renderMenu = () => (
     <Menu
       mode="inline"
-      selectedKeys={[location.pathname]}
+      selectedKeys={[activeKey]}
       onClick={handleMenuClick}
       items={getMenuItems()}
       style={{
@@ -154,7 +167,7 @@ export const Sidebar = ({ mobileOpen, onClose }) => {
     <>
       {/* Desktop Persistent Sidebar */}
       <aside className="vibemed-desktop-sidebar">
-        {menuContent}
+        {renderMenu()}
       </aside>
 
       {/* Mobile / Tablet Drawer */}
@@ -187,7 +200,7 @@ export const Sidebar = ({ mobileOpen, onClose }) => {
         styles={{ body: { padding: '12px 0' } }}
         width={260}
       >
-        {menuContent}
+        {mobileOpen && renderMenu()}
       </Drawer>
     </>
   );

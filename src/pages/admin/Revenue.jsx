@@ -99,11 +99,14 @@ export const Revenue = () => {
       key: 'clinics',
       render: (_, record) => (
         <Space size={3} wrap>
-          {record.clinicsBreakdown?.map((cb) => (
-            <Tag key={cb.clinicId} color="purple" style={{ fontSize: 11 }}>
-              {cb.clinicName.split(' ')[0]} ({cb.daysWorked}d)
-            </Tag>
-          ))}
+          {record.clinicsBreakdown?.map((cb) => {
+            const cName = cb.clinicName ? String(cb.clinicName).split(' ')[0] : 'Clinic';
+            return (
+              <Tag key={cb.clinicId || Math.random()} color="purple" style={{ fontSize: 11 }}>
+                {cName} ({cb.daysWorked || 0}d)
+              </Tag>
+            );
+          })}
         </Space>
       ),
     },
@@ -114,7 +117,7 @@ export const Revenue = () => {
       align: 'center',
       render: (count) => (
         <Tag color="blue" style={{ fontSize: 12, fontWeight: 700, padding: '2px 8px' }}>
-          {count} Visits
+          {count || 0} Visits
         </Tag>
       ),
     },
@@ -125,7 +128,7 @@ export const Revenue = () => {
       align: 'right',
       render: (val) => (
         <span style={{ fontWeight: 700, color: '#0d9488', fontSize: 14 }}>
-          ${val.toLocaleString()}
+          ${(Number(val) || 0).toLocaleString()}
         </span>
       ),
     },
@@ -136,7 +139,7 @@ export const Revenue = () => {
       align: 'right',
       render: (val) => (
         <span style={{ fontWeight: 600, color: '#dc2626', fontSize: 13 }}>
-          -${val.toLocaleString()}
+          -${(Number(val) || 0).toLocaleString()}
         </span>
       ),
     },
@@ -147,7 +150,7 @@ export const Revenue = () => {
       align: 'right',
       render: (val) => (
         <span style={{ fontWeight: 800, color: '#0369a1', fontSize: 14 }}>
-          ${val.toLocaleString()}
+          ${(Number(val) || 0).toLocaleString()}
         </span>
       ),
     },
@@ -296,13 +299,87 @@ export const Revenue = () => {
         }
         style={{ borderRadius: 16, border: '1px solid #e2e8f0', marginBottom: 24 }}
       >
-        <Table
-          columns={columns}
-          dataSource={revenueData.doctorReports}
-          rowKey="doctorId"
-          pagination={false}
-          scroll={{ x: 800 }}
-        />
+        {/* Desktop Table View */}
+        <div className="vibemed-desktop-table">
+          <Table
+            columns={columns}
+            dataSource={revenueData.doctorReports}
+            rowKey="doctorId"
+            pagination={false}
+            scroll={{ x: 800 }}
+          />
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="vibemed-mobile-cards">
+          {revenueData.doctorReports.map((doc) => (
+            <Card
+              key={doc.doctorId}
+              style={{
+                borderRadius: 14,
+                marginBottom: 12,
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)',
+              }}
+              styles={{ body: { padding: '14px 16px' } }}
+            >
+              {/* Doctor Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Avatar src={doc.avatar} size={40} style={{ border: '2px solid #0d9488' }}>
+                    {doc.doctorName?.charAt(0)}
+                  </Avatar>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a' }}>{doc.doctorName}</div>
+                    <Tag color="geekblue" style={{ fontSize: 10, margin: 0 }}>{doc.specialty}</Tag>
+                  </div>
+                </div>
+                <Tag color="green">Settled</Tag>
+              </div>
+
+              {/* Financial Metrics Grid */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: 8,
+                  background: '#f8fafc',
+                  padding: '10px 12px',
+                  borderRadius: 8,
+                  marginBottom: 10,
+                  fontSize: 12,
+                }}
+              >
+                <div>
+                  <span style={{ color: '#64748b' }}>Visits: </span>
+                  <strong>{doc.patientsTreated}</strong>
+                </div>
+                <div>
+                  <span style={{ color: '#64748b' }}>Gross: </span>
+                  <strong style={{ color: '#0d9488' }}>${(Number(doc.grossBilled) || 0).toLocaleString()}</strong>
+                </div>
+                <div>
+                  <span style={{ color: '#64748b' }}>Sitting Fee: </span>
+                  <strong style={{ color: '#dc2626' }}>-${(Number(doc.totalSittingFee) || 0).toLocaleString()}</strong>
+                </div>
+                <div>
+                  <span style={{ color: '#64748b' }}>Net Payout: </span>
+                  <strong style={{ color: '#0369a1', fontSize: 13 }}>${(Number(doc.netPayout) || 0).toLocaleString()}</strong>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <Button
+                block
+                icon={<FilePdfOutlined />}
+                onClick={() => handleOpenDoctorInvoice(doc)}
+                style={{ borderRadius: 8, borderColor: '#0d9488', color: '#0d9488', minHeight: 36 }}
+              >
+                View & Print Invoice
+              </Button>
+            </Card>
+          ))}
+        </div>
       </Card>
 
       {/* Per-Clinic Branch Financial Comparison Cards */}
@@ -354,11 +431,11 @@ export const Revenue = () => {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span style={{ color: '#64748b' }}>Gross Patient Billing:</span>
-                    <strong style={{ color: '#0d9488' }}>${branchGross.toLocaleString()}</strong>
+                    <strong style={{ color: '#0d9488' }}>${(Number(branchGross) || 0).toLocaleString()}</strong>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span style={{ color: '#64748b' }}>Sitting Fees Retained:</span>
-                    <strong style={{ color: '#dc2626' }}>+${branchSitting.toLocaleString()}</strong>
+                    <strong style={{ color: '#dc2626' }}>+${(Number(branchSitting) || 0).toLocaleString()}</strong>
                   </div>
                 </div>
               </Card>
