@@ -67,11 +67,17 @@ export const authService = {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
+      const text = await response.text();
+      let data = null;
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch (jsonErr) {
+        console.warn("Failed to parse login response JSON:", jsonErr, text);
+      }
 
-      if (!response.ok || !data.success) {
-        let errorMsg = data.message || "Login failed";
-        if (data.errors) {
+      if (!response.ok || !data || !data.success) {
+        let errorMsg = data?.message || `Login failed with status ${response.status}`;
+        if (data?.errors) {
           const firstErr = Object.values(data.errors).flat()[0];
           if (firstErr) errorMsg = firstErr;
         }

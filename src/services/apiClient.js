@@ -67,30 +67,34 @@ class ApiClient {
     try {
       const response = await fetch(url, config);
 
+      const rawText = await response.text();
+      let responseData = null;
+      if (rawText && rawText.trim().length > 0) {
+        try {
+          responseData = JSON.parse(rawText);
+        } catch {
+          // Response body was not valid JSON
+        }
+      }
+
       // Handle non-2xx responses
       if (!response.ok) {
-        let errorData = null;
-        try {
-          errorData = await response.json();
-        } catch {
-          // Response body was not JSON
-        }
         const errorMessage =
-          errorData?.message ||
-          errorData?.error ||
-          `Request failed with status ${response.status}`;
+          responseData?.message ||
+          responseData?.error ||
+          (rawText && rawText.length < 200 ? rawText : `Request failed with status ${response.status}`);
         const error = new Error(errorMessage);
         error.status = response.status;
-        error.data = errorData;
+        error.data = responseData;
         throw error;
       }
 
       // Handle empty body responses (e.g. 204 No Content)
-      if (response.status === 204) {
-        return null;
+      if (response.status === 204 || !responseData) {
+        return responseData || null;
       }
 
-      return await response.json();
+      return responseData;
     } catch (err) {
       // Re-throw formatted error for calling service to handle or fallback
       throw err;
