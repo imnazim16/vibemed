@@ -398,10 +398,19 @@ const mapBackendDoctorToUi = (doc) => {
     doc.department ||
     'General Consultation';
 
+  const doctorName =
+    doc.user?.name ||
+    doc.name ||
+    doc.profile?.name ||
+    (doc.email ? `Dr. ${doc.email.split('@')[0]}` : `Dr. Specialist #${doc.id}`);
+
+  const userPhone = doc.user?.phone || doc.phone || '+1 (555) 000-0000';
+  const userEmail = doc.user?.email || doc.email || '';
+
   return {
     id: doc.id,
     userId: doc.user_id,
-    name: doc.name,
+    name: doctorName,
     specialty: specialtyName,
     specialtyId: doc.specialty_id,
     title: doc.title || `${specialtyName} Specialist`,
@@ -420,8 +429,8 @@ const mapBackendDoctorToUi = (doc) => {
     education: doc.education || doc.bio || 'Medical University Degree',
     bio: doc.bio || '',
     licenseNumber: doc.license_number || '',
-    phone: doc.phone || '+1 (555) 000-0000',
-    email: doc.email || '',
+    phone: userPhone,
+    email: userEmail,
     patientsCount: doc.patients_count || 120,
     availability: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
     timeSlots: ['09:00 AM - 01:00 PM', '04:00 PM - 08:00 PM'],

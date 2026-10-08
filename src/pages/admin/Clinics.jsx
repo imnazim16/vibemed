@@ -17,6 +17,8 @@ import {
   Avatar,
   Badge,
   Divider,
+  Switch,
+  Tooltip,
 } from 'antd';
 import {
   ShopOutlined,
@@ -107,13 +109,47 @@ export const Clinics = () => {
     }
   };
 
-  const handleDeleteClinic = async (id) => {
+  const handleDeleteClinic = async (id, clinicName) => {
     try {
-      await clinicService.deleteClinic(id);
-      message.success('Clinic branch removed');
+      const result = await clinicService.deleteClinic(id);
+      if (result?.deactivated) {
+        message.info(
+          `Clinic "${clinicName || 'location'}" has existing appointments, so it was deactivated and removed from active branches.`
+        );
+      } else {
+        message.success(`Clinic "${clinicName || 'branch'}" deleted successfully`);
+      }
       loadData();
     } catch (err) {
+      // If server rejects with appointments protection, offer/perform automatic deactivation
+      const isApptProtected =
+        err?.message?.toLowerCase().includes('appointment') ||
+        err?.message?.toLowerCase().includes('deactivate');
+
+      if (isApptProtected) {
+        try {
+          await clinicService.toggleStatus(id, 'inactive');
+          message.warning(
+            `"${clinicName || 'Clinic'}" has appointments on file: deactivated instead of deleting.`
+          );
+          loadData();
+          return;
+        } catch {
+          // fall through
+        }
+      }
       message.error(err.message || 'Cannot delete clinic');
+    }
+  };
+
+  const handleToggleClinicStatus = async (id, currentStatus) => {
+    const nextStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    try {
+      await clinicService.toggleStatus(id, nextStatus);
+      message.success(`Clinic status changed to ${nextStatus}`);
+      loadData();
+    } catch (err) {
+      message.error(err.message || 'Failed to toggle status');
     }
   };
 
@@ -344,7 +380,16 @@ export const Clinics = () => {
                     </div>
                   </div>
 
-                  <Space size="small">
+                  <Space size="small" align="center">
+                    <Tooltip title={clinic.status === 'active' ? 'Branch is Active' : 'Branch is Inactive'}>
+                      <Switch
+                        size="small"
+                        checked={clinic.status === 'active'}
+                        checkedChildren="Active"
+                        unCheckedChildren="Inactive"
+                        onChange={() => handleToggleClinicStatus(clinic.id, clinic.status)}
+                      />
+                    </Tooltip>
                     <Button
                       size="small"
                       icon={<EditOutlined />}
@@ -354,13 +399,15 @@ export const Clinics = () => {
                     </Button>
                     <Popconfirm
                       title="Delete Clinic Branch"
-                      description={`Remove ${clinic.name}?`}
-                      onConfirm={() => handleDeleteClinic(clinic.id)}
+                      description={`Are you sure you want to delete ${clinic.name}? (If it has existing appointments, it will be safely deactivated).`}
+                      onConfirm={() => handleDeleteClinic(clinic.id, clinic.name)}
                       okText="Yes, Delete"
                       cancelText="Cancel"
                       okButtonProps={{ danger: true }}
                     >
-                      <Button size="small" danger icon={<DeleteOutlined />} />
+                      <Tooltip title="Delete Clinic Branch">
+                        <Button size="small" danger icon={<DeleteOutlined />} />
+                      </Tooltip>
                     </Popconfirm>
                   </Space>
                 </div>

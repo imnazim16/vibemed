@@ -256,19 +256,31 @@ export const clinicService = {
     }
 
     const isBackendId = typeof id === 'number' || (!isNaN(Number(id)) && !String(id).startsWith('clinic_'));
+    let deactivated = false;
+
     if (isBackendId) {
       try {
         await apiClient.delete(`/locations/${id}`);
       } catch (err) {
         console.warn(`API DELETE /locations/${id} failed:`, err.message);
-        if (err.message && err.message.toLowerCase().includes('appointment')) {
+        const errMsg = String(err.message || '').toLowerCase();
+        // Backend blocks deletion if location has existing appointments: automatically deactivate
+        if (errMsg.includes('appointment') || errMsg.includes('deactivate')) {
+          try {
+            await apiClient.patch(`/locations/${id}/status`, { status: 'inactive' });
+            deactivated = true;
+          } catch (patchErr) {
+            console.warn(`Failed to deactivate location ${id}:`, patchErr);
+            throw err;
+          }
+        } else {
           throw err;
         }
       }
     }
 
     clinicsCache = clinicsCache.filter((c) => String(c.id) !== String(id));
-    return true;
+    return { success: true, deactivated };
   },
 
   /**

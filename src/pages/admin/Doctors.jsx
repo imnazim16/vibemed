@@ -599,8 +599,19 @@ export const AdminDoctors = () => {
                 <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
                   <Avatar size={58} src={doc.avatar} style={{ border: '2px solid #0d9488', flexShrink: 0 }} />
                   <div style={{ minWidth: 0, flex: 1 }}>
-                    <Title level={5} style={{ margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {doc.name}
+                    <Title
+                      level={5}
+                      style={{
+                        margin: 0,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        color: '#0f172a',
+                        fontWeight: 700,
+                      }}
+                      title={doc.name || 'Doctor'}
+                    >
+                      {doc.name || `Dr. ${doc.specialty || 'Physician'}`}
                     </Title>
                     <Tag color="geekblue" style={{ marginTop: 4 }}>
                       {doc.specialty}
