@@ -11,7 +11,7 @@
 
 import { authService } from './authService';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://vibemed.just4madam.com/api/v1';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 const TENANT = import.meta.env.VITE_API_TENANT || 'demo.just4madam.com';
 
 class ApiClient {

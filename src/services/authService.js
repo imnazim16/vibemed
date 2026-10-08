@@ -1,7 +1,6 @@
 // VibeMed Authentication Service with Live Backend API & localStorage Persistence
 
-const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "https://vibemed.just4madam.com/api/v1";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api/v1";
 const TENANT = import.meta.env.VITE_API_TENANT || "demo.just4madam.com";
 const STORAGE_KEY = "vibemed_auth_session";
 const TOKEN_KEY = "vibemed_token";
