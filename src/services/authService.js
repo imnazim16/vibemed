@@ -76,6 +76,11 @@ export const authService = {
       }
 
       if (!response.ok || !data || !data.success) {
+        if (response.status === 429) {
+          console.warn("API rate limit exceeded (429). Falling back to demo session if available.");
+          return authService.mockLogin({ email, role });
+        }
+
         let errorMsg = data?.message || `Login failed with status ${response.status}`;
         if (data?.errors) {
           const firstErr = Object.values(data.errors).flat()[0];

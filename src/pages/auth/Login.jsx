@@ -221,6 +221,66 @@ export const Login = () => {
                 Sign In to Staff Portal
               </Button>
             </Form.Item>
+
+            {/* Quick Demo Credentials */}
+            <div
+              style={{
+                marginTop: 12,
+                padding: "10px 12px",
+                background: "#f0fdfa",
+                borderRadius: 8,
+                border: "1px solid #ccfbf1",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: "#0f766e",
+                  marginBottom: 6,
+                }}
+              >
+                Demo Quick Fill:
+              </div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                <Button
+                  size="small"
+                  style={{ fontSize: 12, borderRadius: 6 }}
+                  onClick={() => {
+                    form.setFieldsValue({
+                      email: "admin@demo-medical-center.test",
+                      password: "password",
+                    });
+                  }}
+                >
+                  Admin
+                </Button>
+                <Button
+                  size="small"
+                  style={{ fontSize: 12, borderRadius: 6 }}
+                  onClick={() => {
+                    form.setFieldsValue({
+                      email: "dr.sarah@vibemed.health",
+                      password: "password",
+                    });
+                  }}
+                >
+                  Doctor
+                </Button>
+                <Button
+                  size="small"
+                  style={{ fontSize: 12, borderRadius: 6 }}
+                  onClick={() => {
+                    form.setFieldsValue({
+                      email: "jessica.reception@vibemed.health",
+                      password: "password",
+                    });
+                  }}
+                >
+                  Receptionist
+                </Button>
+              </div>
+            </div>
           </Form>
 
           <div
