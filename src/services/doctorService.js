@@ -743,20 +743,62 @@ export const doctorService = {
     const isBackendId = typeof id === 'number' || (!isNaN(Number(id)) && !String(id).startsWith('doc_'));
     if (isBackendId) {
       try {
+        let specialtyId = updates.specialty_id;
+        if (!specialtyId && updates.specialty) {
+          const match = specialtiesCache.find(
+            (s) => (s.name || '').toLowerCase() === updates.specialty.toLowerCase()
+          );
+          if (match) specialtyId = match.id;
+        }
+
+        let departmentId = updates.department_id;
+        if (!departmentId && updates.department) {
+          const match = departmentsCache.find(
+            (d) => (d.name || '').toLowerCase() === updates.department.toLowerCase()
+          );
+          if (match) departmentId = match.id;
+        }
+
+        const expYears = updates.experience_years
+          ? Number(updates.experience_years)
+          : updates.experience
+            ? parseInt(String(updates.experience).replace(/\D/g, ''), 10) || 0
+            : undefined;
+
         const payload = {
           name: updates.name,
+          email: updates.email,
           phone: updates.phone,
-          consultation_fee: updates.fee ? Number(updates.fee) : undefined,
-          experience_years: updates.experience_years ? Number(updates.experience_years) : undefined,
-          status: updates.status === 'Available' ? 'active' : 'inactive',
+          specialty_id: specialtyId,
+          department_id: departmentId,
+          bio: updates.bio,
+          license_number: updates.licenseNumber || updates.license_number,
+          consultation_fee: updates.fee !== undefined ? Number(updates.fee) : undefined,
+          experience_years: expYears,
+          status: updates.status === 'Unavailable' || updates.status === 'inactive' ? 'inactive' : 'active',
         };
+
+        // Remove undefined keys
+        Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
 
         const res = await apiClient.patch(`/admin/doctors/${id}`, payload);
         const updated = res?.data || res;
+
+        // Also update weekday availability if provided
+        if (updates.weekdaySchedule) {
+          try {
+            const schedules = convertWeekdayScheduleToBackend(updates.weekdaySchedule);
+            await apiClient.put(`/admin/doctors/${id}/availability`, { schedules });
+          } catch (schedErr) {
+            console.warn(`API PUT /admin/doctors/${id}/availability update failed:`, schedErr.message);
+          }
+        }
+
         if (updated && updated.id) {
           const mapped = mapBackendDoctorToUi(updated);
-          doctorsCache = doctorsCache.map((d) => (String(d.id) === String(id) ? { ...mapped, ...updates } : d));
-          return mapped;
+          const merged = { ...mapped, ...updates };
+          doctorsCache = doctorsCache.map((d) => (String(d.id) === String(id) ? merged : d));
+          return merged;
         }
       } catch (err) {
         console.warn(`API PATCH /admin/doctors/${id} failed, updating locally:`, err.message);

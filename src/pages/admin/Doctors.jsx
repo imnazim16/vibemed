@@ -36,6 +36,7 @@ import {
   TeamOutlined,
   AppstoreOutlined,
   CheckCircleOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import { PageHeader } from "../../components/common/PageHeader";
 import { doctorService } from "../../services/doctorService";
@@ -184,6 +185,7 @@ export const AdminDoctors = () => {
   const [isNewSpecialtyModalOpen, setIsNewSpecialtyModalOpen] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
+  const [editingDoctor, setEditingDoctor] = useState(null);
 
   // Fetch full doctor profile details via GET /admin/doctors/{id}
   const handleOpenDoctorProfile = async (doc) => {
@@ -198,6 +200,57 @@ export const AdminDoctors = () => {
       console.warn("Could not load full doctor profile:", err);
     } finally {
       setLoadingProfile(false);
+    }
+  };
+
+  // Open Edit Doctor modal populated with doctor data
+  const handleOpenEditDoctor = async (doc) => {
+    setEditingDoctor(doc);
+    const expNum = doc.experience_years
+      ? Number(doc.experience_years)
+      : doc.experience
+        ? parseInt(String(doc.experience).replace(/\D/g, ''), 10) || 5
+        : 5;
+
+    form.setFieldsValue({
+      name: doc.name || "",
+      specialty: doc.specialty || "",
+      experience: expNum,
+      fee: doc.fee || 150,
+      email: doc.email || "",
+      phone: doc.phone || "",
+      bio: doc.bio || "",
+      licenseNumber: doc.licenseNumber || doc.license_number || "",
+    });
+
+    if (doc.weekdaySchedule && Object.keys(doc.weekdaySchedule).length > 0) {
+      setWeekdaySchedule(doc.weekdaySchedule);
+    } else {
+      setWeekdaySchedule(createInitialSlots());
+    }
+
+    setIsAddModalOpen(true);
+
+    // Fetch full profile if not yet fetched to ensure all bio/details are loaded
+    try {
+      const fullDoc = await doctorService.getById(doc.id);
+      if (fullDoc) {
+        form.setFieldsValue({
+          name: fullDoc.name || doc.name,
+          specialty: fullDoc.specialty || doc.specialty,
+          experience: fullDoc.experience_years || expNum,
+          fee: fullDoc.fee || doc.fee,
+          email: fullDoc.email || doc.email,
+          phone: fullDoc.phone || doc.phone,
+          bio: fullDoc.bio || doc.bio || "",
+          licenseNumber: fullDoc.licenseNumber || doc.licenseNumber || "",
+        });
+        if (fullDoc.weekdaySchedule && Object.keys(fullDoc.weekdaySchedule).length > 0) {
+          setWeekdaySchedule(fullDoc.weekdaySchedule);
+        }
+      }
+    } catch (e) {
+      console.warn("Could not fetch full details for edit:", e);
     }
   };
 
@@ -479,7 +532,7 @@ export const AdminDoctors = () => {
     loadData();
   };
 
-  const handleAddDoctor = async (values) => {
+  const handleSaveDoctor = async (values) => {
     const enabledDays = Object.keys(weekdaySchedule).filter(
       (day) =>
         weekdaySchedule[day].enabled && weekdaySchedule[day].slots.length > 0,
@@ -498,6 +551,7 @@ export const AdminDoctors = () => {
     enabledDays.forEach((day) => {
       weekdaySchedule[day].slots.forEach((s) => {
         if (!clinicsVisitedMap[s.clinicId]) {
+          const found = clinics.find((c) => c.id === s.clinicId);
           const feeForClinic =
             s.sittingFee !== undefined
               ? Number(s.sittingFee)
@@ -548,44 +602,77 @@ export const AdminDoctors = () => {
     const summarySlots = [];
     enabledDays.forEach((d) => {
       weekdaySchedule[d].slots.forEach((s) => {
-        const shortName = s.clinicName.split(" ")[0];
+        const shortName = s.clinicName ? s.clinicName.split(" ")[0] : "Clinic";
         summarySlots.push(`${s.start} - ${s.end} @ ${shortName}`);
       });
     });
 
     try {
-      await doctorService.addDoctor({
-        name: values.name,
-        specialty: values.specialty,
-        title: values.title || "Consultant Specialist",
-        experience: `${values.experience || 5} years`,
-        fee,
-        department: `${values.specialty} Department`,
-        education: values.education || "Top Medical University",
-        phone: values.phone || "+1 (555) 000-0000",
-        email: values.email || "doctor@vibemed.health",
-        availability: enabledDays,
-        timeSlots: Array.from(new Set(summarySlots)),
-        weekdaySchedule,
-        monthlyStats: {
-          month: "September 2026",
-          totalPatientsTreated: totalPatients,
-          grossBilled: totalBilled,
-          totalSittingCharges: totalSitting,
-          netDoctorPayout: totalBilled - totalSitting,
-          clinicsBreakdown,
-        },
-      });
+      if (editingDoctor) {
+        await doctorService.updateDoctor(editingDoctor.id, {
+          name: values.name,
+          specialty: values.specialty,
+          title: values.title || editingDoctor.title || `${values.specialty} Specialist`,
+          experience: `${values.experience || 5} years`,
+          experience_years: Number(values.experience) || 5,
+          fee,
+          bio: values.bio,
+          licenseNumber: values.licenseNumber,
+          department: `${values.specialty} Department`,
+          education: values.education || editingDoctor.education || "Top Medical University",
+          phone: values.phone || editingDoctor.phone || "+1 (555) 000-0000",
+          email: values.email || editingDoctor.email || "doctor@vibemed.health",
+          availability: enabledDays,
+          timeSlots: Array.from(new Set(summarySlots)),
+          weekdaySchedule,
+          monthlyStats: {
+            month: "September 2026",
+            totalPatientsTreated: totalPatients,
+            grossBilled: totalBilled,
+            totalSittingCharges: totalSitting,
+            netDoctorPayout: totalBilled - totalSitting,
+            clinicsBreakdown,
+          },
+        });
+        message.success("Doctor profile and schedule updated successfully!");
+        setEditingDoctor(null);
+      } else {
+        await doctorService.addDoctor({
+          name: values.name,
+          specialty: values.specialty,
+          title: values.title || "Consultant Specialist",
+          experience: `${values.experience || 5} years`,
+          experience_years: Number(values.experience) || 5,
+          fee,
+          bio: values.bio,
+          licenseNumber: values.licenseNumber,
+          department: `${values.specialty} Department`,
+          education: values.education || "Top Medical University",
+          phone: values.phone || "+1 (555) 000-0000",
+          email: values.email || "doctor@vibemed.health",
+          availability: enabledDays,
+          timeSlots: Array.from(new Set(summarySlots)),
+          weekdaySchedule,
+          monthlyStats: {
+            month: "September 2026",
+            totalPatientsTreated: totalPatients,
+            grossBilled: totalBilled,
+            totalSittingCharges: totalSitting,
+            netDoctorPayout: totalBilled - totalSitting,
+            clinicsBreakdown,
+          },
+        });
+        message.success(
+          "Doctor registered with multi-clinic shifts and revenue tracking!",
+        );
+      }
 
-      message.success(
-        "Doctor registered with multi-clinic shifts and revenue tracking!",
-      );
       setIsAddModalOpen(false);
       form.resetFields();
       setWeekdaySchedule(createInitialSlots());
       loadData();
     } catch {
-      message.error("Failed to add doctor");
+      message.error(editingDoctor ? "Failed to update doctor" : "Failed to add doctor");
     }
   };
 
@@ -621,7 +708,12 @@ export const AdminDoctors = () => {
             type="primary"
             icon={<PlusOutlined />}
             style={{ backgroundColor: "#0d9488", borderRadius: 8 }}
-            onClick={() => setIsAddModalOpen(true)}
+            onClick={() => {
+              setEditingDoctor(null);
+              form.resetFields();
+              setWeekdaySchedule(createInitialSlots());
+              setIsAddModalOpen(true);
+            }}
           >
             Add New Doctor
           </Button>,
@@ -1000,6 +1092,14 @@ export const AdminDoctors = () => {
                         View Profile
                       </Button>
 
+                      <Button
+                        size="small"
+                        icon={<EditOutlined />}
+                        onClick={() => handleOpenEditDoctor(doc)}
+                      >
+                        Edit
+                      </Button>
+
                       <Popconfirm
                         title="Delete Doctor Profile"
                         description={`Are you sure you want to remove ${doc.name}?`}
@@ -1026,19 +1126,22 @@ export const AdminDoctors = () => {
       )}
 
       {/* ========================================================
-          ADD DOCTOR MODAL WITH MULTI-LOCATION CROSS-CLINIC SHIFTS
+          ADD / EDIT DOCTOR MODAL WITH MULTI-LOCATION CROSS-CLINIC SHIFTS
          ======================================================== */}
       <Modal
         title={
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <MedicineBoxOutlined style={{ color: "#0d9488", fontSize: 22 }} />
             <span style={{ fontSize: 18, fontWeight: 700 }}>
-              Add New Doctor & Multi-Clinic Schedule
+              {editingDoctor ? `Edit Doctor: ${editingDoctor.name}` : "Add New Doctor & Multi-Clinic Schedule"}
             </span>
           </div>
         }
         open={isAddModalOpen}
-        onCancel={() => setIsAddModalOpen(false)}
+        onCancel={() => {
+          setIsAddModalOpen(false);
+          setEditingDoctor(null);
+        }}
         footer={null}
         width="100%"
         style={{ maxWidth: 860 }}
@@ -1046,7 +1149,7 @@ export const AdminDoctors = () => {
         <Form
           form={form}
           layout="vertical"
-          onFinish={handleAddDoctor}
+          onFinish={handleSaveDoctor}
           initialValues={{
             experience: 8,
             fee: 150,
@@ -1133,6 +1236,19 @@ export const AdminDoctors = () => {
             <Col xs={24} sm={12}>
               <Form.Item name="phone" label="Contact Phone">
                 <Input placeholder="+1 (555) 000-0000" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={[12, 0]}>
+            <Col xs={24} sm={12}>
+              <Form.Item name="licenseNumber" label="Medical License / Registration No.">
+                <Input placeholder="e.g. MD-992014-CA" />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item name="bio" label="Professional Bio / Summary">
+                <Input placeholder="e.g. Board-certified specialist with extensive clinical background..." />
               </Form.Item>
             </Col>
           </Row>
@@ -1530,7 +1646,7 @@ export const AdminDoctors = () => {
                 fontSize: 15,
               }}
             >
-              Save & Register Doctor Schedule
+              {editingDoctor ? "Update Doctor Profile & Shifts" : "Save & Register Doctor Schedule"}
             </Button>
           </Form.Item>
         </Form>
@@ -1594,6 +1710,7 @@ export const AdminDoctors = () => {
         doctor={selectedDoctor}
         loading={loadingProfile}
         onDelete={(doc) => handleDeleteDoctor(doc.id)}
+        onEdit={(doc) => handleOpenEditDoctor(doc)}
       />
     </div>
   );

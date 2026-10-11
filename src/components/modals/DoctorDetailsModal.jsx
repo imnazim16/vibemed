@@ -17,6 +17,7 @@ import {
   MedicineBoxOutlined,
   CalendarOutlined,
   DeleteOutlined,
+  EditOutlined,
   ClockCircleOutlined,
   ShopOutlined,
   DollarOutlined,
@@ -25,7 +26,7 @@ import {
 
 const { Title, Text } = Typography;
 
-export const DoctorDetailsModal = ({ open, onCancel, doctor, loading = false, onBook, onDelete }) => {
+export const DoctorDetailsModal = ({ open, onCancel, doctor, loading = false, onBook, onDelete, onEdit }) => {
   if (!doctor) return null;
 
   const stats = doctor.monthlyStats || {};
@@ -59,6 +60,18 @@ export const DoctorDetailsModal = ({ open, onCancel, doctor, loading = false, on
         <Button key="close" onClick={onCancel}>
           Close
         </Button>,
+        onEdit && (
+          <Button
+            key="edit"
+            icon={<EditOutlined />}
+            onClick={() => {
+              onCancel();
+              onEdit(doctor);
+            }}
+          >
+            Edit Profile
+          </Button>
+        ),
         onBook && (
           <Button
             key="book"
