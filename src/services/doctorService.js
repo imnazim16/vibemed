@@ -407,6 +407,39 @@ const mapBackendDoctorToUi = (doc) => {
   const userPhone = doc.user?.phone || doc.phone || '+1 (555) 000-0000';
   const userEmail = doc.user?.email || doc.email || '';
 
+  // Parse bio & education from doctor profile
+  const profileBio = doc.profile?.bio || doc.bio || '';
+  const profileEducation = Array.isArray(doc.profile?.education)
+    ? doc.profile.education.join(', ')
+    : doc.education || doc.profile?.education || 'Top Medical University';
+  const profileLanguages = Array.isArray(doc.profile?.languages) ? doc.profile.languages : ['English'];
+  const experienceYears = doc.profile?.experience_years ?? doc.experience_years ?? 5;
+
+  // Map locations array from backend
+  const locationsList = Array.isArray(doc.locations) ? doc.locations : [];
+  const clinicsPracticed = locationsList.map((loc) => ({
+    clinicId: loc.id,
+    clinicName: loc.name,
+    daysWorked: 12,
+    patientsTreated: 20,
+    amountBilled: 20 * fee,
+    totalSittingFee: 4000,
+    netPayout: 20 * fee - 4000,
+  }));
+
+  // Map availabilities from backend if present
+  let activeAvailabilityDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+  if (Array.isArray(doc.availabilities) && doc.availabilities.length > 0) {
+    const daysSet = new Set();
+    doc.availabilities.forEach((av) => {
+      const dName = DAY_MAP_INDEX_TO_NAME[av.day_of_week];
+      if (dName) daysSet.add(dName);
+    });
+    if (daysSet.size > 0) {
+      activeAvailabilityDays = Array.from(daysSet);
+    }
+  }
+
   return {
     id: doc.id,
     userId: doc.user_id,
@@ -414,8 +447,8 @@ const mapBackendDoctorToUi = (doc) => {
     specialty: specialtyName,
     specialtyId: doc.specialty_id,
     title: doc.title || `${specialtyName} Specialist`,
-    experience: doc.experience_years ? `${doc.experience_years} years` : '5+ years',
-    experience_years: doc.experience_years || 5,
+    experience: `${experienceYears} years`,
+    experience_years: experienceYears,
     rating: doc.rating || 4.9,
     reviewsCount: doc.reviews_count || 45,
     avatar:
@@ -426,33 +459,45 @@ const mapBackendDoctorToUi = (doc) => {
     status: doc.status === 'active' ? 'Available' : 'Unavailable',
     department: departmentName,
     departmentId: doc.department_id,
-    education: doc.education || doc.bio || 'Medical University Degree',
-    bio: doc.bio || '',
+    education: profileEducation,
+    bio: profileBio,
+    languages: profileLanguages,
     licenseNumber: doc.license_number || '',
     phone: userPhone,
     email: userEmail,
     patientsCount: doc.patients_count || 120,
-    availability: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+    availability: activeAvailabilityDays,
+    locations: locationsList,
     timeSlots: ['09:00 AM - 01:00 PM', '04:00 PM - 08:00 PM'],
     weekdaySchedule: makeSchedule({
-      days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-      slots: [
-        {
-          id: `shift_${doc.id}_1`,
-          start: '09:00 AM',
-          end: '01:00 PM',
-          clinicId: 'clinic_1',
-          clinicName: 'Downtown Medical Center',
-        },
-      ],
+      days: activeAvailabilityDays,
+      slots: locationsList.length > 0
+        ? locationsList.map((loc, idx) => ({
+            id: `shift_${doc.id}_${loc.id}`,
+            start: '09:00 AM',
+            end: '01:00 PM',
+            clinicId: loc.id,
+            clinicName: loc.name,
+            sittingFee: 400,
+          }))
+        : [
+            {
+              id: `shift_${doc.id}_1`,
+              start: '09:00 AM',
+              end: '01:00 PM',
+              clinicId: 'clinic_1',
+              clinicName: 'Downtown Medical Center',
+              sittingFee: 500,
+            },
+          ],
     }),
     monthlyStats: {
       month: 'September 2026',
-      totalPatientsTreated: 45,
-      grossBilled: 45 * fee,
-      totalSittingCharges: 3000,
-      netDoctorPayout: Math.max(0, 45 * fee - 3000),
-      clinicsBreakdown: [],
+      totalPatientsTreated: clinicsPracticed.length > 0 ? clinicsPracticed.reduce((s, c) => s + c.patientsTreated, 0) : 45,
+      grossBilled: clinicsPracticed.length > 0 ? clinicsPracticed.reduce((s, c) => s + c.amountBilled, 0) : 45 * fee,
+      totalSittingCharges: clinicsPracticed.length > 0 ? clinicsPracticed.reduce((s, c) => s + c.totalSittingFee, 0) : 3000,
+      netDoctorPayout: clinicsPracticed.length > 0 ? clinicsPracticed.reduce((s, c) => s + c.netPayout, 0) : Math.max(0, 45 * fee - 3000),
+      clinicsBreakdown: clinicsPracticed,
     },
   };
 };

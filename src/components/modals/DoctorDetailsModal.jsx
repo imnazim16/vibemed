@@ -11,6 +11,7 @@ import {
   Button,
   Popconfirm,
   Table,
+  Spin,
 } from 'antd';
 import {
   MedicineBoxOutlined,
@@ -24,7 +25,7 @@ import {
 
 const { Title, Text } = Typography;
 
-export const DoctorDetailsModal = ({ open, onCancel, doctor, onBook, onDelete }) => {
+export const DoctorDetailsModal = ({ open, onCancel, doctor, loading = false, onBook, onDelete }) => {
   if (!doctor) return null;
 
   const stats = doctor.monthlyStats || {};
@@ -74,7 +75,8 @@ export const DoctorDetailsModal = ({ open, onCancel, doctor, onBook, onDelete })
         ),
       ].filter(Boolean)}
     >
-      <div style={{ textAlign: 'center', paddingTop: 16 }}>
+      <Spin spinning={loading} tip="Loading full doctor profile from server...">
+        <div style={{ textAlign: 'center', paddingTop: 16 }}>
         <Avatar
           size={84}
           src={doctor.avatar}
@@ -235,10 +237,30 @@ export const DoctorDetailsModal = ({ open, onCancel, doctor, onBook, onDelete })
           )}
         </Descriptions.Item>
 
+        {doctor.bio && (
+          <Descriptions.Item label="Professional Bio">
+            <span style={{ color: '#475569', lineHeight: 1.5 }}>{doctor.bio}</span>
+          </Descriptions.Item>
+        )}
+        {doctor.licenseNumber && (
+          <Descriptions.Item label="Medical License">
+            <Tag color="purple">{doctor.licenseNumber}</Tag>
+          </Descriptions.Item>
+        )}
+        {doctor.languages && doctor.languages.length > 0 && (
+          <Descriptions.Item label="Languages Spoken">
+            <Space size={4} wrap>
+              {doctor.languages.map((lang) => (
+                <Tag key={lang} color="cyan">{lang}</Tag>
+              ))}
+            </Space>
+          </Descriptions.Item>
+        )}
         <Descriptions.Item label="Contact Email">{doctor.email}</Descriptions.Item>
         <Descriptions.Item label="Contact Phone">{doctor.phone}</Descriptions.Item>
-        <Descriptions.Item label="Education / School">{doctor.education}</Descriptions.Item>
+        <Descriptions.Item label="Education / Qualifications">{doctor.education}</Descriptions.Item>
       </Descriptions>
+      </Spin>
     </Modal>
   );
 };

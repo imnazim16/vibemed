@@ -11,8 +11,23 @@
 
 import { authService } from './authService';
 
-// Base API URL: Defaults to relative '/api/v1', which is proxied locally by Vite and on Hostinger by api/proxy.php
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+// Base API URL:
+// In local Vite dev: uses '/api/v1' (handled by Vite dev server proxy).
+// In production on Hostinger: uses '/api/proxy.php' (handled by PHP reverse proxy, eliminating CORS).
+const resolveApiBaseUrl = () => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  if (typeof window !== 'undefined') {
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (!isLocalhost) {
+      return '/api/proxy.php';
+    }
+  }
+  return '/api/v1';
+};
+
+const BASE_URL = resolveApiBaseUrl();
 const TENANT = import.meta.env.VITE_API_TENANT || 'demo.just4madam.com';
 
 class ApiClient {
